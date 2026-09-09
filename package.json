@@ -1,0 +1,13 @@
+{
+  "name": "x402-authority-verifier-kit",
+  "version": "1.0.0",
+  "description": "Independent conformance kit for x402-foundation/x402#3220 (authority mandate spec) and #3376 (authorization-evidence EVC boundary). Zero dependencies.",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "test": "node vectors/run_conformance.cjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
