@@ -16,7 +16,7 @@ cd x402-authority-verifier-kit
 npm test        # node vectors/run_conformance.cjs
 ```
 
-Exits `0` on full pass, `1` on any failure. As of commit `<COMMIT_SHA>`:
+Exits `0` on full pass, `1` on any failure. As of commit `9dc370a`:
 **39/39 applicable cases pass**, reproducing #3220's `authority-vectors.json`
 (pinned at `72c3704`) byte-for-byte for every value that requires it, and
 matching every accept/refuse verdict.
