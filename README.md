@@ -13,13 +13,27 @@ PR's code. Zero dependencies; every check runs on Node's built-in `crypto`.
 ```sh
 git clone https://github.com/stillmarcus24/x402-authority-verifier-kit
 cd x402-authority-verifier-kit
-npm test        # node vectors/run_conformance.cjs
+./prove.sh      # everything: corpus determinism + differential + conformance
+npm test        # conformance only (node vectors/run_conformance.cjs)
 ```
 
-Exits `0` on full pass, `1` on any failure. As of commit `9dc370a`:
-**39/39 applicable cases pass**, reproducing #3220's `authority-vectors.json`
-(pinned at `72c3704`) byte-for-byte for every value that requires it, and
-matching every accept/refuse verdict.
+Exits `0` on full pass, `1` on any failure. No network, no dependencies.
+
+- **39/39 applicable cases pass** against #3220's `authority-vectors.json`
+  (pinned at `72c3704`) — byte-for-byte for every value that requires it, and
+  matching every accept/refuse verdict.
+- **69/69 adversarial vectors pass under two independent implementations** —
+  Node and Python, no shared algorithm code, Ed25519 re-derived from RFC 8032
+  on the Python side so the two sides cross unrelated crypto stacks. A vector
+  passes only when both agree with the expectation *and* with each other.
+
+Three specification defects were found and are reported rather than worked
+around: no normative mapping from a #3220 refusal to #3376's closed EVC
+denial-code registry, an adapter defect in this kit that silently refused
+compliant settlements until the second implementation disagreed, and §7's
+`scheme` field having no normative wire token. Full write-up, including the
+one divergence the corpus records instead of forcing into agreement:
+**[`proof/PROOF.md`](proof/PROOF.md)**.
 
 ## What's checked
 
@@ -102,5 +116,8 @@ issuer is trustworthy, nor that delivery or execution happened.
 
 ## Source pins
 
-Full commit pins and the explicit scope-cut rationale: `docs/SOURCE_PINS.md`.
-Independent-implementation report: `docs/CROSS_IMPLEMENTATION_REPORT.md`.
+Full commit pins and the explicit scope-cut rationale: `docs/SOURCE_PINS.md`
+(prose) and `proof/SOURCE_PINS.json` (machine-readable, regenerate with
+`node proof/tools/pin_sources.cjs`). Independent-implementation report:
+`docs/CROSS_IMPLEMENTATION_REPORT.md`. Differential proof and defect
+write-up: `proof/PROOF.md`.

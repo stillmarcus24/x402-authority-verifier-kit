@@ -1,0 +1,2653 @@
+{
+  "schema": "stillos-assurance-adversarial-corpus/1",
+  "generated_from": "proof/tools/build_corpus.cjs",
+  "determinism": "No randomness. Fixed verifier clock 2026-09-10T00:00:00Z. Regenerating this file from the same inputs reproduces it byte for byte.",
+  "reason_code_registry": "Refusal codes are #3376's CLOSED EVC denial-code registry (delegation_invalid, expired, internal_error, invalid_bundle, invalid_proof, invalid_signature, malformed_input, request_mismatch, scope_exceeded, unsupported_version) as read from evcHost.ts isClosedVerdict at the pinned commit -- NOT descriptive names derived from #3220 prose. See PROOF.md defect D-1.",
+  "signing_keys": "Mandates are signed with the issuer seed published in x402#3220's own authority-vectors.json at the pinned commit. Upstream test material. No StillOS private key appears in this repository.",
+  "low_bit_probe": {
+    "hex": "02a5fc9b5bea33b328a3dbda35059c9515f84ce8eb8d7021f94f0409904f696f",
+    "preimage": "stillos-conformance-probe-15"
+  },
+  "vector_count": 69,
+  "vectors": [
+    {
+      "id": "canon-01-field-reordering",
+      "attacks": "canonical field reordering must not change the digest",
+      "ops": [
+        {
+          "id": "a",
+          "op": "jcs",
+          "args": {
+            "value": {
+              "b": "2",
+              "a": "1",
+              "c": "3"
+            }
+          }
+        },
+        {
+          "id": "b",
+          "op": "jcs",
+          "args": {
+            "value": {
+              "c": "3",
+              "a": "1",
+              "b": "2"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "a_equals_b": true,
+        "canonical": "{\"a\":\"1\",\"b\":\"2\",\"c\":\"3\"}"
+      },
+      "note": null
+    },
+    {
+      "id": "canon-02-utf16-key-order-astral",
+      "attacks": "RFC 8785 3.2.3 sorts keys by UTF-16 code UNITS, not code points",
+      "ops": [
+        {
+          "id": "a",
+          "op": "jcs",
+          "args": {
+            "value": {
+              "😀": 1,
+              "＀": 2
+            }
+          }
+        }
+      ],
+      "expect": {
+        "canonical_first_key_is_astral": true
+      },
+      "note": "U+1F600 encodes to the surrogate pair D83D DE00, so under UTF-16 it sorts BEFORE U+FF00. Under Python-style code-point ordering it would sort AFTER. A sorted() with no key function diverges here."
+    },
+    {
+      "id": "canon-03-unicode-nfc-vs-nfd",
+      "attacks": "JCS MUST NOT normalize; NFC and NFD are different digests",
+      "ops": [
+        {
+          "id": "nfc",
+          "op": "jcs",
+          "args": {
+            "value": {
+              "k": "é"
+            }
+          }
+        },
+        {
+          "id": "nfd",
+          "op": "jcs",
+          "args": {
+            "value": {
+              "k": "é"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "nfc_equals_nfd": false
+      },
+      "note": "Silent NFC normalization would make two distinct records hash alike."
+    },
+    {
+      "id": "canon-04-lone-surrogate-refused",
+      "attacks": "an unpaired surrogate cannot be UTF-8 encoded",
+      "ops": [
+        {
+          "id": "a",
+          "op": "jcs",
+          "args": {
+            "value": {
+              "k": "\ud800"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "ok": false,
+        "error": "jcs_lone_surrogate"
+      },
+      "note": null
+    },
+    {
+      "id": "canon-05-integer-string-ambiguity",
+      "attacks": "a numeric amount and its decimal string are NOT the same record",
+      "ops": [
+        {
+          "id": "num",
+          "op": "jcs",
+          "args": {
+            "value": {
+              "amount": 1000
+            }
+          }
+        },
+        {
+          "id": "str",
+          "op": "jcs",
+          "args": {
+            "value": {
+              "amount": "1000"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "num_equals_str": false
+      },
+      "note": null
+    },
+    {
+      "id": "canon-06-non-integer-refused",
+      "attacks": "out-of-profile floats are refused, never approximated",
+      "ops": [
+        {
+          "id": "a",
+          "op": "jcs",
+          "args": {
+            "value": {
+              "amount": 0.1
+            }
+          }
+        }
+      ],
+      "expect": {
+        "ok": false,
+        "error": "jcs_non_integer_number_out_of_profile"
+      },
+      "note": null
+    },
+    {
+      "id": "triple-01-high-bit-masking-material",
+      "attacks": "felt252 masking CHANGES the value (31 of 32 digests)",
+      "ops": [
+        {
+          "id": "a",
+          "op": "digest_triple",
+          "args": {
+            "triple": {
+              "alg": "sha-256",
+              "enc": "felt252-masked-251",
+              "hex": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "valid": true,
+        "top5bits": 12,
+        "masking_is_noop": false
+      },
+      "note": null
+    },
+    {
+      "id": "triple-02-low-bit-masking-noop",
+      "attacks": "the 1-in-32 digest where masking is a no-op and a BROKEN verifier still passes",
+      "ops": [
+        {
+          "id": "a",
+          "op": "digest_triple",
+          "args": {
+            "triple": {
+              "alg": "sha-256",
+              "enc": "felt252-masked-251",
+              "hex": "02a5fc9b5bea33b328a3dbda35059c9515f84ce8eb8d7021f94f0409904f696f"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "valid": true,
+        "top5bits": 0,
+        "masking_is_noop": true
+      },
+      "note": "Passing this alone proves nothing. It exists so that passing cannot be mistaken for conformance."
+    },
+    {
+      "id": "triple-03-missing-enc",
+      "attacks": "a digest without enc is INVALID, not defaulted to none",
+      "ops": [
+        {
+          "id": "a",
+          "op": "digest_triple",
+          "args": {
+            "triple": {
+              "alg": "sha-256",
+              "hex": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "valid": false,
+        "error": "missing_enc"
+      },
+      "note": null
+    },
+    {
+      "id": "triple-04-unknown-enc",
+      "attacks": "an unrecognised enc must fail closed",
+      "ops": [
+        {
+          "id": "a",
+          "op": "digest_triple",
+          "args": {
+            "triple": {
+              "alg": "sha-256",
+              "enc": "felt252-masked-252",
+              "hex": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "valid": false,
+        "error": "unknown_enc"
+      },
+      "note": null
+    },
+    {
+      "id": "triple-05-missing-alg",
+      "attacks": "an unlabelled digest invites fake cross-ledger agreement",
+      "ops": [
+        {
+          "id": "a",
+          "op": "digest_triple",
+          "args": {
+            "triple": {
+              "enc": "none",
+              "hex": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "valid": false,
+        "error": "missing_alg"
+      },
+      "note": null
+    },
+    {
+      "id": "triple-06-unknown-alg",
+      "attacks": "an unknown digest function must fail closed",
+      "ops": [
+        {
+          "id": "a",
+          "op": "digest_triple",
+          "args": {
+            "triple": {
+              "alg": "md5",
+              "enc": "none",
+              "hex": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "valid": false,
+        "error": "unknown_alg"
+      },
+      "note": null
+    },
+    {
+      "id": "triple-07-uppercase-hex",
+      "attacks": "section 2.1 requires lowercase; uppercase must not silently pass",
+      "ops": [
+        {
+          "id": "a",
+          "op": "digest_triple",
+          "args": {
+            "triple": {
+              "alg": "sha-256",
+              "enc": "none",
+              "hex": "636EC23CEC4628502312DDDE24BC620BEE54BF83BD85759EADABF810230A4536"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "valid": false,
+        "error": "hex_not_lowercase"
+      },
+      "note": null
+    },
+    {
+      "id": "triple-08-short-hex",
+      "attacks": "truncation must not be silently zero-padded",
+      "ops": [
+        {
+          "id": "a",
+          "op": "digest_triple",
+          "args": {
+            "triple": {
+              "alg": "sha-256",
+              "enc": "none",
+              "hex": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a45"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "valid": false,
+        "error": "bad_hex_length"
+      },
+      "note": null
+    },
+    {
+      "id": "triple-09-0x-prefix-equivalence",
+      "attacks": "section 2.2: 0x-prefixed and bare forms are the SAME value",
+      "ops": [
+        {
+          "id": "bare",
+          "op": "digest_triple",
+          "args": {
+            "triple": {
+              "alg": "sha-256",
+              "enc": "none",
+              "hex": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536"
+            }
+          }
+        },
+        {
+          "id": "pref",
+          "op": "digest_triple",
+          "args": {
+            "triple": {
+              "alg": "sha-256",
+              "enc": "none",
+              "hex": "0x636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "bare_equals_pref": true
+      },
+      "note": null
+    },
+    {
+      "id": "triple-10-leading-zero-rendering",
+      "attacks": "a digest whose most significant byte is zero must render canonically",
+      "ops": [
+        {
+          "id": "a",
+          "op": "digest_triple",
+          "args": {
+            "triple": {
+              "alg": "sha-256",
+              "enc": "none",
+              "hex": "006ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "valid": true,
+        "comparison_hex_has_no_leading_zero": true
+      },
+      "note": "The exact false-negative Apodix hit on 2026-09-07: 0x0abc... vs 0xabc... compared as strings."
+    },
+    {
+      "id": "leaf-01-limb-roundtrip",
+      "attacks": "section 4.2 limbs are lossless, low then high",
+      "ops": [
+        {
+          "id": "enc",
+          "op": "digest_limbs",
+          "args": {
+            "hex": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536"
+          }
+        },
+        {
+          "id": "dec",
+          "op": "limbs_to_hex",
+          "args": {
+            "digest_lo": "316796300310704499543803232519218414902",
+            "digest_hi": "132168663851421639234674382174282342923"
+          }
+        }
+      ],
+      "expect": {
+        "roundtrip_equals_input": true
+      },
+      "note": null
+    },
+    {
+      "id": "leaf-02-F1-empty-origin-tag",
+      "attacks": "refusal F1: a digest without a label is a number",
+      "ops": [
+        {
+          "id": "a",
+          "op": "v3_batch",
+          "args": {
+            "K": 1,
+            "leaves": [
+              {
+                "origin_tag": "",
+                "digest_lo": "1",
+                "digest_hi": "1"
+              }
+            ]
+          }
+        }
+      ],
+      "expect": {
+        "provable": false,
+        "refusals_include": "F1@0"
+      },
+      "note": null
+    },
+    {
+      "id": "leaf-03-F2-zero-digest",
+      "attacks": "refusal F2: an all-zero digest is an unfilled field",
+      "ops": [
+        {
+          "id": "a",
+          "op": "v3_batch",
+          "args": {
+            "K": 1,
+            "leaves": [
+              {
+                "origin_tag": "STILLOS_NOTARY_RECEIPT_V1",
+                "digest_lo": "0",
+                "digest_hi": "0"
+              }
+            ]
+          }
+        }
+      ],
+      "expect": {
+        "provable": false,
+        "refusals_include": "F2@0"
+      },
+      "note": null
+    },
+    {
+      "id": "leaf-04-F3-duplicate-triple",
+      "attacks": "refusal F3: the bound is the TRIPLE, not the digest",
+      "ops": [
+        {
+          "id": "a",
+          "op": "v3_batch",
+          "args": {
+            "K": 0,
+            "leaves": [
+              {
+                "origin_tag": "STILLOS_NOTARY_RECEIPT_V1",
+                "digest_lo": "5",
+                "digest_hi": "7"
+              },
+              {
+                "origin_tag": "STILLOS_NOTARY_RECEIPT_V1",
+                "digest_lo": "5",
+                "digest_hi": "7"
+              }
+            ]
+          }
+        }
+      ],
+      "expect": {
+        "provable": false,
+        "refusals_include": "F3@1"
+      },
+      "note": null
+    },
+    {
+      "id": "leaf-05-same-digest-two-labels-is-legal",
+      "attacks": "section 4.3: the same digest under two labels is LEGITIMATE",
+      "ops": [
+        {
+          "id": "a",
+          "op": "v3_batch",
+          "args": {
+            "K": 0,
+            "leaves": [
+              {
+                "origin_tag": "STILLOS_NOTARY_RECEIPT_V1",
+                "digest_lo": "5",
+                "digest_hi": "7"
+              },
+              {
+                "origin_tag": "TAMGA_CHAIN_HEAD_V1",
+                "digest_lo": "5",
+                "digest_hi": "7"
+              }
+            ]
+          }
+        }
+      ],
+      "expect": {
+        "provable": true
+      },
+      "note": "It is the same object seen by two registries. A verifier that dedupes on the digest alone wrongly refuses this."
+    },
+    {
+      "id": "leaf-06-F4-over-64-leaves",
+      "attacks": "refusal F4: a chosen bound of 64",
+      "ops": [
+        {
+          "id": "a",
+          "op": "v3_batch",
+          "args": {
+            "K": 0,
+            "leaves": [
+              {
+                "origin_tag": "T",
+                "digest_lo": "1",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "2",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "3",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "4",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "5",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "6",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "7",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "8",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "9",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "10",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "11",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "12",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "13",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "14",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "15",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "16",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "17",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "18",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "19",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "20",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "21",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "22",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "23",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "24",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "25",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "26",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "27",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "28",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "29",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "30",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "31",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "32",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "33",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "34",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "35",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "36",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "37",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "38",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "39",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "40",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "41",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "42",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "43",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "44",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "45",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "46",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "47",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "48",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "49",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "50",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "51",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "52",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "53",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "54",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "55",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "56",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "57",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "58",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "59",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "60",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "61",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "62",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "63",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "64",
+                "digest_hi": "1"
+              },
+              {
+                "origin_tag": "T",
+                "digest_lo": "65",
+                "digest_hi": "1"
+              }
+            ]
+          }
+        }
+      ],
+      "expect": {
+        "provable": false,
+        "refusals_include": "F4"
+      },
+      "note": null
+    },
+    {
+      "id": "leaf-07-K0-F0-refused",
+      "attacks": "a batch that commits nothing would produce a constant root",
+      "ops": [
+        {
+          "id": "a",
+          "op": "v3_batch",
+          "args": {
+            "K": 0,
+            "leaves": []
+          }
+        }
+      ],
+      "expect": {
+        "provable": false,
+        "refusals_include": "K0F0"
+      },
+      "note": null
+    },
+    {
+      "id": "leaf-08-K0-F1-pure-leaf-legal",
+      "attacks": "K=0 with F>=1 is LEGAL -- anchoring without fabricating a payment",
+      "ops": [
+        {
+          "id": "a",
+          "op": "v3_batch",
+          "args": {
+            "K": 0,
+            "leaves": [
+              {
+                "origin_tag": "STILLOS_NOTARY_RECEIPT_V1",
+                "digest_lo": "5",
+                "digest_hi": "7"
+              }
+            ]
+          }
+        }
+      ],
+      "expect": {
+        "provable": true,
+        "pure_leaf_batch": true
+      },
+      "note": null
+    },
+    {
+      "id": "leaf-09-origin-tag-31-byte-bound",
+      "attacks": "a Cairo short string is at most 31 ASCII bytes",
+      "ops": [
+        {
+          "id": "ok",
+          "op": "origin_tag",
+          "args": {
+            "origin_tag": "STILLOS_NOTARY_RECEIPT_V1"
+          }
+        },
+        {
+          "id": "over",
+          "op": "origin_tag",
+          "args": {
+            "origin_tag": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+          }
+        }
+      ],
+      "expect": {
+        "ok_len": 25,
+        "over_error": "tag_over_31_bytes"
+      },
+      "note": null
+    },
+    {
+      "id": "leaf-10-unknown-origin-tag-is-indeterminate",
+      "attacks": "section 4.4: unknown label => indeterminate, NEVER absent",
+      "ops": [
+        {
+          "id": "a",
+          "op": "v3_batch",
+          "args": {
+            "K": 0,
+            "leaves": [
+              {
+                "origin_tag": "SOME_REGISTRY_WE_DO_NOT_KNOW",
+                "digest_lo": "5",
+                "digest_hi": "7"
+              }
+            ]
+          }
+        }
+      ],
+      "expect": {
+        "provable": true
+      },
+      "note": "The leaf still enters the root computation. What is indeterminate is its MEANING, never its inclusion."
+    },
+    {
+      "id": "base-01-seven-field-digest",
+      "attacks": "section 4.6 golden vector, computed independently by both implementations",
+      "ops": [
+        {
+          "id": "a",
+          "op": "base_settlement_v1",
+          "args": {
+            "fields": {
+              "amount": "1000000",
+              "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "network": "eip155:8453",
+              "payTo": "0xa3a05818d4051bfa759fb7d936b57c072e4e0caf",
+              "payer": "0x1111111111111111111111111111111111111111",
+              "resource": "https://stillosdigitalholdings.com/notary/screen-url",
+              "transaction": "0x2222222222222222222222222222222222222222222222222222222222222222"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "valid": true,
+        "node_equals_python": true
+      },
+      "note": "Vauban publishes the RECIPE normatively but its golden vector lives in an internal document. This is a public one."
+    },
+    {
+      "id": "base-02-payTo-before-payer",
+      "attacks": "UTF-16 sort puts payTo BEFORE payer; a case-insensitive sort would not",
+      "ops": [
+        {
+          "id": "a",
+          "op": "base_settlement_v1",
+          "args": {
+            "fields": {
+              "amount": "1000000",
+              "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "network": "eip155:8453",
+              "payTo": "0xa3a05818d4051bfa759fb7d936b57c072e4e0caf",
+              "payer": "0x1111111111111111111111111111111111111111",
+              "resource": "https://stillosdigitalholdings.com/notary/screen-url",
+              "transaction": "0x2222222222222222222222222222222222222222222222222222222222222222"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "jcs_has_payTo_before_payer": true
+      },
+      "note": null
+    },
+    {
+      "id": "base-03-eighth-field-refused",
+      "attacks": "\"seven fields, and of nothing else\"",
+      "ops": [
+        {
+          "id": "a",
+          "op": "base_settlement_v1",
+          "args": {
+            "fields": {
+              "amount": "1000000",
+              "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "network": "eip155:8453",
+              "payTo": "0xa3a05818d4051bfa759fb7d936b57c072e4e0caf",
+              "payer": "0x1111111111111111111111111111111111111111",
+              "resource": "https://stillosdigitalholdings.com/notary/screen-url",
+              "transaction": "0x2222222222222222222222222222222222222222222222222222222222222222",
+              "timestamp": "2026-09-10T00:00:00Z"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "valid": false,
+        "error": "unknown_field_timestamp"
+      },
+      "note": null
+    },
+    {
+      "id": "base-04-missing-resource",
+      "attacks": "a digest that did not name what was bought would commit to a transfer, not a settlement",
+      "ops": [
+        {
+          "id": "a",
+          "op": "base_settlement_v1",
+          "args": {
+            "fields": {
+              "amount": "1000000",
+              "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "network": "eip155:8453",
+              "payTo": "0xa3a05818d4051bfa759fb7d936b57c072e4e0caf",
+              "payer": "0x1111111111111111111111111111111111111111",
+              "transaction": "0x2222222222222222222222222222222222222222222222222222222222222222"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "valid": false,
+        "error": "missing_field_resource"
+      },
+      "note": null
+    },
+    {
+      "id": "base-05-amount-as-number",
+      "attacks": "\"The values are STRINGS\" -- a u256 does not survive JSON numbers",
+      "ops": [
+        {
+          "id": "a",
+          "op": "base_settlement_v1",
+          "args": {
+            "fields": {
+              "amount": 1000000,
+              "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "network": "eip155:8453",
+              "payTo": "0xa3a05818d4051bfa759fb7d936b57c072e4e0caf",
+              "payer": "0x1111111111111111111111111111111111111111",
+              "resource": "https://stillosdigitalholdings.com/notary/screen-url",
+              "transaction": "0x2222222222222222222222222222222222222222222222222222222222222222"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "valid": false,
+        "error": "field_not_a_string_amount"
+      },
+      "note": null
+    },
+    {
+      "id": "base-06-amount-leading-zero",
+      "attacks": "a leading-zero amount is a different string for the same value",
+      "ops": [
+        {
+          "id": "a",
+          "op": "base_settlement_v1",
+          "args": {
+            "fields": {
+              "amount": "01000000",
+              "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "network": "eip155:8453",
+              "payTo": "0xa3a05818d4051bfa759fb7d936b57c072e4e0caf",
+              "payer": "0x1111111111111111111111111111111111111111",
+              "resource": "https://stillosdigitalholdings.com/notary/screen-url",
+              "transaction": "0x2222222222222222222222222222222222222222222222222222222222222222"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "valid": false,
+        "error": "amount_not_canonical_decimal"
+      },
+      "note": null
+    },
+    {
+      "id": "base-07-uppercase-hex-field",
+      "attacks": "\"The four hex fields are lowercase\"",
+      "ops": [
+        {
+          "id": "a",
+          "op": "base_settlement_v1",
+          "args": {
+            "fields": {
+              "amount": "1000000",
+              "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "network": "eip155:8453",
+              "payTo": "0xA3A05818D4051BFA759FB7D936B57C072E4E0CAF",
+              "payer": "0x1111111111111111111111111111111111111111",
+              "resource": "https://stillosdigitalholdings.com/notary/screen-url",
+              "transaction": "0x2222222222222222222222222222222222222222222222222222222222222222"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "valid": false,
+        "error": "hex_field_not_lowercase_0x_payTo"
+      },
+      "note": null
+    },
+    {
+      "id": "base-08-resource-one-character-differs",
+      "attacks": "a receipt whose resource differs by one character is REFUTED, not indeterminate",
+      "ops": [
+        {
+          "id": "a",
+          "op": "base_settlement_v1",
+          "args": {
+            "fields": {
+              "amount": "1000000",
+              "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "network": "eip155:8453",
+              "payTo": "0xa3a05818d4051bfa759fb7d936b57c072e4e0caf",
+              "payer": "0x1111111111111111111111111111111111111111",
+              "resource": "https://stillosdigitalholdings.com/notary/screen-url",
+              "transaction": "0x2222222222222222222222222222222222222222222222222222222222222222"
+            }
+          }
+        },
+        {
+          "id": "b",
+          "op": "base_settlement_v1",
+          "args": {
+            "fields": {
+              "amount": "1000000",
+              "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "network": "eip155:8453",
+              "payTo": "0xa3a05818d4051bfa759fb7d936b57c072e4e0caf",
+              "payer": "0x1111111111111111111111111111111111111111",
+              "resource": "https://stillosdigitalholdings.com/notary/screen-urls",
+              "transaction": "0x2222222222222222222222222222222222222222222222222222222222222222"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "a_digest_differs_from_b": true
+      },
+      "note": null
+    },
+    {
+      "id": "base-09-network-case-preserved",
+      "attacks": "a CAIP-2 reference is case-sensitive and MUST NOT be lowercased",
+      "ops": [
+        {
+          "id": "a",
+          "op": "base_settlement_v1",
+          "args": {
+            "fields": {
+              "amount": "1000000",
+              "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "network": "starknet:SN_SEPOLIA",
+              "payTo": "0xa3a05818d4051bfa759fb7d936b57c072e4e0caf",
+              "payer": "0x1111111111111111111111111111111111111111",
+              "resource": "https://stillosdigitalholdings.com/notary/screen-url",
+              "transaction": "0x2222222222222222222222222222222222222222222222222222222222222222"
+            }
+          }
+        },
+        {
+          "id": "b",
+          "op": "base_settlement_v1",
+          "args": {
+            "fields": {
+              "amount": "1000000",
+              "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "network": "starknet:sn_sepolia",
+              "payTo": "0xa3a05818d4051bfa759fb7d936b57c072e4e0caf",
+              "payer": "0x1111111111111111111111111111111111111111",
+              "resource": "https://stillosdigitalholdings.com/notary/screen-url",
+              "transaction": "0x2222222222222222222222222222222222222222222222222222222222222222"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "a_digest_differs_from_b": true
+      },
+      "note": null
+    },
+    {
+      "id": "receipt-01-real-production-verdict",
+      "attacks": "a real production receipt verifies offline against a pinned key",
+      "ops": [
+        {
+          "id": "a",
+          "op": "notary_receipt",
+          "args": {
+            "receipt": {
+              "agent": "stillos-foreseal-preflight-check",
+              "claim_sha256": "c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb",
+              "ts": "2026-09-06T17:20:11.994Z",
+              "prev_hash": "68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe",
+              "notary_fp": "21de066900082465",
+              "resolver_hash": "0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb",
+              "receipt_hash": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+              "signature": "vZdOtHbydTHqnV3052STMM44pc5qfNhVaNddOWOWImPkSbsAfrngsuyiaTeRcsUj09+NSs541tkzRJCZxgSeDw==",
+              "verify": "https://nolawealthfinancial.com/notary/verify?hash=636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+              "attestation_type": "resolved_verdict",
+              "authoritative": true,
+              "proves": "This claim was resolved against an external ground-truth source (see resolver_type / settles_against in the sealed verdict object). The verdict, not the claim alone, is what carries evidentiary weight.",
+              "actor_class": "INTERNAL_SYSTEM",
+              "classification_reason": "source IP 49.13.49.149 is own infrastructure",
+              "confidence": "HIGH",
+              "source_ip_hash": "225955bb97ecbf7d"
+            },
+            "pubkey_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEARz4QMQCVd+ImBqd3YmkIA3NYd857O+5dAWNhY7V2ryk=\n-----END PUBLIC KEY-----\n"
+          }
+        }
+      ],
+      "expect": {
+        "hash_ok": true,
+        "sig_ok": true,
+        "field_count": 6
+      },
+      "note": null
+    },
+    {
+      "id": "receipt-02-real-production-claim-5-field",
+      "attacks": "resolver_hash OMITTED (not null) yields the 5-field preimage",
+      "ops": [
+        {
+          "id": "a",
+          "op": "notary_receipt",
+          "args": {
+            "receipt": {
+              "agent": "stillos-foreseal-preflight-check",
+              "claim_sha256": "56107c0239667922710247f3b6c57d01e958d75fd4375977c42c19b6d5f68efa",
+              "ts": "2026-09-06T17:20:11.637Z",
+              "prev_hash": "061fb1b73d358e54eff150602cd8cda5250dc6fe25f9ad46171e851618ea10f3",
+              "notary_fp": "21de066900082465",
+              "receipt_hash": "68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe",
+              "signature": "D0gIRGa+hVa9nl9y2tSPxAoiLACk6cOqUNoet8oHiZANQV7+rMnIPbXWLkAoxQWTCfNpa6/S+Idy8tQus0njAQ==",
+              "verify": "https://nolawealthfinancial.com/notary/verify?hash=68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe",
+              "attestation_type": "sealed_claim",
+              "authoritative": false,
+              "proves": "StillOS recorded and Ed25519-signed this exact claim at this timestamp (tamper-evident, hash-chained). This is testimony that the claim was made — NOT independent verification that the claim is true. The verify URL checks the SIGNATURE and hash integrity, not external reality.",
+              "actor_class": "INTERNAL_SYSTEM",
+              "classification_reason": "source IP 49.13.49.149 is own infrastructure",
+              "confidence": "HIGH",
+              "source_ip_hash": "225955bb97ecbf7d"
+            },
+            "pubkey_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEARz4QMQCVd+ImBqd3YmkIA3NYd857O+5dAWNhY7V2ryk=\n-----END PUBLIC KEY-----\n"
+          }
+        }
+      ],
+      "expect": {
+        "hash_ok": true,
+        "sig_ok": true,
+        "field_count": 5
+      },
+      "note": null
+    },
+    {
+      "id": "receipt-03-resolver-hash-null-not-omitted",
+      "attacks": "null is NOT the same as omitted -- it changes the preimage",
+      "ops": [
+        {
+          "id": "a",
+          "op": "notary_receipt",
+          "args": {
+            "receipt": {
+              "agent": "stillos-foreseal-preflight-check",
+              "claim_sha256": "56107c0239667922710247f3b6c57d01e958d75fd4375977c42c19b6d5f68efa",
+              "ts": "2026-09-06T17:20:11.637Z",
+              "prev_hash": "061fb1b73d358e54eff150602cd8cda5250dc6fe25f9ad46171e851618ea10f3",
+              "notary_fp": "21de066900082465",
+              "receipt_hash": "68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe",
+              "signature": "D0gIRGa+hVa9nl9y2tSPxAoiLACk6cOqUNoet8oHiZANQV7+rMnIPbXWLkAoxQWTCfNpa6/S+Idy8tQus0njAQ==",
+              "verify": "https://nolawealthfinancial.com/notary/verify?hash=68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe",
+              "attestation_type": "sealed_claim",
+              "authoritative": false,
+              "proves": "StillOS recorded and Ed25519-signed this exact claim at this timestamp (tamper-evident, hash-chained). This is testimony that the claim was made — NOT independent verification that the claim is true. The verify URL checks the SIGNATURE and hash integrity, not external reality.",
+              "actor_class": "INTERNAL_SYSTEM",
+              "classification_reason": "source IP 49.13.49.149 is own infrastructure",
+              "confidence": "HIGH",
+              "source_ip_hash": "225955bb97ecbf7d",
+              "resolver_hash": null
+            },
+            "pubkey_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEARz4QMQCVd+ImBqd3YmkIA3NYd857O+5dAWNhY7V2ryk=\n-----END PUBLIC KEY-----\n"
+          }
+        }
+      ],
+      "expect": {
+        "hash_ok": false
+      },
+      "note": null
+    },
+    {
+      "id": "receipt-04-mutated-content",
+      "attacks": "a one-character change to a committed field breaks the digest",
+      "ops": [
+        {
+          "id": "a",
+          "op": "notary_receipt",
+          "args": {
+            "receipt": {
+              "agent": "stillos-foreseal-preflight-checkx",
+              "claim_sha256": "c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb",
+              "ts": "2026-09-06T17:20:11.994Z",
+              "prev_hash": "68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe",
+              "notary_fp": "21de066900082465",
+              "resolver_hash": "0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb",
+              "receipt_hash": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+              "signature": "vZdOtHbydTHqnV3052STMM44pc5qfNhVaNddOWOWImPkSbsAfrngsuyiaTeRcsUj09+NSs541tkzRJCZxgSeDw==",
+              "verify": "https://nolawealthfinancial.com/notary/verify?hash=636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+              "attestation_type": "resolved_verdict",
+              "authoritative": true,
+              "proves": "This claim was resolved against an external ground-truth source (see resolver_type / settles_against in the sealed verdict object). The verdict, not the claim alone, is what carries evidentiary weight.",
+              "actor_class": "INTERNAL_SYSTEM",
+              "classification_reason": "source IP 49.13.49.149 is own infrastructure",
+              "confidence": "HIGH",
+              "source_ip_hash": "225955bb97ecbf7d"
+            },
+            "pubkey_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEARz4QMQCVd+ImBqd3YmkIA3NYd857O+5dAWNhY7V2ryk=\n-----END PUBLIC KEY-----\n"
+          }
+        }
+      ],
+      "expect": {
+        "hash_ok": false,
+        "sig_ok": true
+      },
+      "note": "sig_ok stays true because the signature is over the STATED receipt_hash. Detection comes from hash_ok. Collapsing the two into one boolean would hide exactly this."
+    },
+    {
+      "id": "receipt-05-mutated-receipt-hash",
+      "attacks": "mutating the claimed digest breaks both the recomputation and the signature",
+      "ops": [
+        {
+          "id": "a",
+          "op": "notary_receipt",
+          "args": {
+            "receipt": {
+              "agent": "stillos-foreseal-preflight-check",
+              "claim_sha256": "c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb",
+              "ts": "2026-09-06T17:20:11.994Z",
+              "prev_hash": "68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe",
+              "notary_fp": "21de066900082465",
+              "resolver_hash": "0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb",
+              "receipt_hash": "036ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+              "signature": "vZdOtHbydTHqnV3052STMM44pc5qfNhVaNddOWOWImPkSbsAfrngsuyiaTeRcsUj09+NSs541tkzRJCZxgSeDw==",
+              "verify": "https://nolawealthfinancial.com/notary/verify?hash=636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+              "attestation_type": "resolved_verdict",
+              "authoritative": true,
+              "proves": "This claim was resolved against an external ground-truth source (see resolver_type / settles_against in the sealed verdict object). The verdict, not the claim alone, is what carries evidentiary weight.",
+              "actor_class": "INTERNAL_SYSTEM",
+              "classification_reason": "source IP 49.13.49.149 is own infrastructure",
+              "confidence": "HIGH",
+              "source_ip_hash": "225955bb97ecbf7d"
+            },
+            "pubkey_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEARz4QMQCVd+ImBqd3YmkIA3NYd857O+5dAWNhY7V2ryk=\n-----END PUBLIC KEY-----\n"
+          }
+        }
+      ],
+      "expect": {
+        "hash_ok": false,
+        "sig_ok": false
+      },
+      "note": null
+    },
+    {
+      "id": "receipt-06-mutated-signature",
+      "attacks": "a one-byte signature mutation must fail verification",
+      "ops": [
+        {
+          "id": "a",
+          "op": "notary_receipt",
+          "args": {
+            "receipt": {
+              "agent": "stillos-foreseal-preflight-check",
+              "claim_sha256": "c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb",
+              "ts": "2026-09-06T17:20:11.994Z",
+              "prev_hash": "68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe",
+              "notary_fp": "21de066900082465",
+              "resolver_hash": "0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb",
+              "receipt_hash": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+              "signature": "vJdOtHbydTHqnV3052STMM44pc5qfNhVaNddOWOWImPkSbsAfrngsuyiaTeRcsUj09+NSs541tkzRJCZxgSeDw==",
+              "verify": "https://nolawealthfinancial.com/notary/verify?hash=636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+              "attestation_type": "resolved_verdict",
+              "authoritative": true,
+              "proves": "This claim was resolved against an external ground-truth source (see resolver_type / settles_against in the sealed verdict object). The verdict, not the claim alone, is what carries evidentiary weight.",
+              "actor_class": "INTERNAL_SYSTEM",
+              "classification_reason": "source IP 49.13.49.149 is own infrastructure",
+              "confidence": "HIGH",
+              "source_ip_hash": "225955bb97ecbf7d"
+            },
+            "pubkey_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEARz4QMQCVd+ImBqd3YmkIA3NYd857O+5dAWNhY7V2ryk=\n-----END PUBLIC KEY-----\n"
+          }
+        }
+      ],
+      "expect": {
+        "hash_ok": true,
+        "sig_ok": false
+      },
+      "note": null
+    },
+    {
+      "id": "receipt-07-wrong-signing-key-real-retired",
+      "attacks": "verified against the REAL retired StillOS key, not a synthetic one",
+      "ops": [
+        {
+          "id": "a",
+          "op": "notary_receipt",
+          "args": {
+            "receipt": {
+              "agent": "stillos-foreseal-preflight-check",
+              "claim_sha256": "c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb",
+              "ts": "2026-09-06T17:20:11.994Z",
+              "prev_hash": "68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe",
+              "notary_fp": "21de066900082465",
+              "resolver_hash": "0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb",
+              "receipt_hash": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+              "signature": "vZdOtHbydTHqnV3052STMM44pc5qfNhVaNddOWOWImPkSbsAfrngsuyiaTeRcsUj09+NSs541tkzRJCZxgSeDw==",
+              "verify": "https://nolawealthfinancial.com/notary/verify?hash=636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+              "attestation_type": "resolved_verdict",
+              "authoritative": true,
+              "proves": "This claim was resolved against an external ground-truth source (see resolver_type / settles_against in the sealed verdict object). The verdict, not the claim alone, is what carries evidentiary weight.",
+              "actor_class": "INTERNAL_SYSTEM",
+              "classification_reason": "source IP 49.13.49.149 is own infrastructure",
+              "confidence": "HIGH",
+              "source_ip_hash": "225955bb97ecbf7d"
+            },
+            "pubkey_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAsFIB67A7w7j7oLHjuJeErxMpq2VTZyUXD2785nbgqMM=\n-----END PUBLIC KEY-----\n"
+          }
+        }
+      ],
+      "expect": {
+        "hash_ok": true,
+        "sig_ok": false
+      },
+      "note": "notary_fp 21de0669 vs the retired 921e3af5. A verifier that ignores notary_fp would try the wrong key and must still refuse."
+    },
+    {
+      "id": "receipt-08-broken-chain-link",
+      "attacks": "prev_hash must equal the previous receipt_hash",
+      "ops": [
+        {
+          "id": "a",
+          "op": "notary_receipt",
+          "args": {
+            "receipt": {
+              "agent": "stillos-foreseal-preflight-check",
+              "claim_sha256": "c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb",
+              "ts": "2026-09-06T17:20:11.994Z",
+              "prev_hash": "08d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe",
+              "notary_fp": "21de066900082465",
+              "resolver_hash": "0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb",
+              "receipt_hash": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+              "signature": "vZdOtHbydTHqnV3052STMM44pc5qfNhVaNddOWOWImPkSbsAfrngsuyiaTeRcsUj09+NSs541tkzRJCZxgSeDw==",
+              "verify": "https://nolawealthfinancial.com/notary/verify?hash=636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+              "attestation_type": "resolved_verdict",
+              "authoritative": true,
+              "proves": "This claim was resolved against an external ground-truth source (see resolver_type / settles_against in the sealed verdict object). The verdict, not the claim alone, is what carries evidentiary weight.",
+              "actor_class": "INTERNAL_SYSTEM",
+              "classification_reason": "source IP 49.13.49.149 is own infrastructure",
+              "confidence": "HIGH",
+              "source_ip_hash": "225955bb97ecbf7d"
+            },
+            "pubkey_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEARz4QMQCVd+ImBqd3YmkIA3NYd857O+5dAWNhY7V2ryk=\n-----END PUBLIC KEY-----\n"
+          }
+        }
+      ],
+      "expect": {
+        "hash_ok": false
+      },
+      "note": "prev_hash is inside the hashed preimage, so breaking the chain also breaks the digest -- that binding is the point."
+    },
+    {
+      "id": "receipt-09-jcs-would-be-wrong",
+      "attacks": "the notary preimage is FIXED-ORDER, not JCS -- sorting the keys changes the digest",
+      "ops": [
+        {
+          "id": "fixed",
+          "op": "notary_receipt",
+          "args": {
+            "receipt": {
+              "agent": "stillos-foreseal-preflight-check",
+              "claim_sha256": "c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb",
+              "ts": "2026-09-06T17:20:11.994Z",
+              "prev_hash": "68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe",
+              "notary_fp": "21de066900082465",
+              "resolver_hash": "0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb",
+              "receipt_hash": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+              "signature": "vZdOtHbydTHqnV3052STMM44pc5qfNhVaNddOWOWImPkSbsAfrngsuyiaTeRcsUj09+NSs541tkzRJCZxgSeDw==",
+              "verify": "https://nolawealthfinancial.com/notary/verify?hash=636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+              "attestation_type": "resolved_verdict",
+              "authoritative": true,
+              "proves": "This claim was resolved against an external ground-truth source (see resolver_type / settles_against in the sealed verdict object). The verdict, not the claim alone, is what carries evidentiary weight.",
+              "actor_class": "INTERNAL_SYSTEM",
+              "classification_reason": "source IP 49.13.49.149 is own infrastructure",
+              "confidence": "HIGH",
+              "source_ip_hash": "225955bb97ecbf7d"
+            },
+            "pubkey_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEARz4QMQCVd+ImBqd3YmkIA3NYd857O+5dAWNhY7V2ryk=\n-----END PUBLIC KEY-----\n"
+          }
+        },
+        {
+          "id": "jcs",
+          "op": "jcs",
+          "args": {
+            "value": {
+              "agent": "stillos-foreseal-preflight-check",
+              "claim_sha256": "c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb",
+              "ts": "2026-09-06T17:20:11.994Z",
+              "prev_hash": "68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe",
+              "notary_fp": "21de066900082465",
+              "resolver_hash": "0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "jcs_sha256_differs_from_receipt_hash": true
+      },
+      "note": "An implementer who assumes \"canonical JSON\" means JCS everywhere gets a wrong digest on every receipt."
+    },
+    {
+      "id": "auth-01-amount-exactly-at-per-payment",
+      "attacks": "the boundary is inclusive",
+      "ops": [
+        {
+          "id": "a",
+          "op": "authorize",
+          "args": {
+            "envelope": {
+              "mandate": {
+                "v": "x402-mandate/1",
+                "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+                "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+                "asset": "FCUSD",
+                "cap": "1000000",
+                "perPayment": "250000",
+                "recipients": [
+                  "merchant.example",
+                  "api.vendor.example"
+                ],
+                "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+                "purpose": "conformance vectors — model A",
+                "notAfter": "2027-01-01T00:00:00Z",
+                "nonce": "authority-vec-a-001"
+              },
+              "alg": "Ed25519",
+              "sig": "Kvggg4hh76z8PngCRDjcwHELBw7RJ4hECAGqqmDOpVSbIzce40T7quwC_vjm8Aab3SPRUB5ZPywfoDFwvra_AQ"
+            },
+            "payment": {
+              "payer": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "recipient": "merchant.example",
+              "asset": "FCUSD",
+              "amount": "250000",
+              "mandateDigest": "sha256:445fed871d7c43d2b775e68124103c77646fc0f096fb42c9ea3d9f00c960ca05",
+              "paymentId": "pay-001"
+            },
+            "now_iso": "2026-09-10T00:00:00Z"
+          }
+        }
+      ],
+      "expect": {
+        "verdict": "allow"
+      },
+      "note": null
+    },
+    {
+      "id": "auth-02-one-unit-above-per-payment",
+      "attacks": "one minor unit over must deny",
+      "ops": [
+        {
+          "id": "a",
+          "op": "authorize",
+          "args": {
+            "envelope": {
+              "mandate": {
+                "v": "x402-mandate/1",
+                "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+                "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+                "asset": "FCUSD",
+                "cap": "1000000",
+                "perPayment": "250000",
+                "recipients": [
+                  "merchant.example",
+                  "api.vendor.example"
+                ],
+                "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+                "purpose": "conformance vectors — model A",
+                "notAfter": "2027-01-01T00:00:00Z",
+                "nonce": "authority-vec-a-001"
+              },
+              "alg": "Ed25519",
+              "sig": "Kvggg4hh76z8PngCRDjcwHELBw7RJ4hECAGqqmDOpVSbIzce40T7quwC_vjm8Aab3SPRUB5ZPywfoDFwvra_AQ"
+            },
+            "payment": {
+              "payer": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "recipient": "merchant.example",
+              "asset": "FCUSD",
+              "amount": "250001",
+              "mandateDigest": "sha256:445fed871d7c43d2b775e68124103c77646fc0f096fb42c9ea3d9f00c960ca05",
+              "paymentId": "pay-001"
+            },
+            "now_iso": "2026-09-10T00:00:00Z"
+          }
+        }
+      ],
+      "expect": {
+        "verdict": "deny",
+        "code": "scope_exceeded"
+      },
+      "note": null
+    },
+    {
+      "id": "auth-03-amount-exactly-at-cap",
+      "attacks": "with no perPayment, cap is the inclusive bound",
+      "ops": [
+        {
+          "id": "a",
+          "op": "authorize",
+          "args": {
+            "envelope": {
+              "mandate": {
+                "v": "x402-mandate/1",
+                "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+                "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+                "asset": "FCUSD",
+                "cap": "1000000",
+                "recipients": [
+                  "merchant.example",
+                  "api.vendor.example"
+                ],
+                "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+                "purpose": "conformance vectors — model A",
+                "notAfter": "2027-01-01T00:00:00Z",
+                "nonce": "authority-vec-a-001-nopp"
+              },
+              "alg": "Ed25519",
+              "sig": "s6v3apJOV1E3WXmsn3u-Be2am2kEoExqlu9K_c1qrTxJZrSXooXajRau4qi44tQwuQfWM2Ve98vu-7bYyyzlAg"
+            },
+            "payment": {
+              "payer": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "recipient": "merchant.example",
+              "asset": "FCUSD",
+              "amount": "1000000",
+              "mandateDigest": "sha256:a13f63922c4efd74e44d14ec03a2bf7293de03bd5fcfe91a9990e6f8b042cf46",
+              "paymentId": "pay-001"
+            },
+            "now_iso": "2026-09-10T00:00:00Z"
+          }
+        }
+      ],
+      "expect": {
+        "verdict": "allow"
+      },
+      "note": null
+    },
+    {
+      "id": "auth-04-one-unit-above-cap",
+      "attacks": "no single payment may exceed the cumulative cap",
+      "ops": [
+        {
+          "id": "a",
+          "op": "authorize",
+          "args": {
+            "envelope": {
+              "mandate": {
+                "v": "x402-mandate/1",
+                "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+                "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+                "asset": "FCUSD",
+                "cap": "1000000",
+                "recipients": [
+                  "merchant.example",
+                  "api.vendor.example"
+                ],
+                "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+                "purpose": "conformance vectors — model A",
+                "notAfter": "2027-01-01T00:00:00Z",
+                "nonce": "authority-vec-a-001-nopp"
+              },
+              "alg": "Ed25519",
+              "sig": "s6v3apJOV1E3WXmsn3u-Be2am2kEoExqlu9K_c1qrTxJZrSXooXajRau4qi44tQwuQfWM2Ve98vu-7bYyyzlAg"
+            },
+            "payment": {
+              "payer": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "recipient": "merchant.example",
+              "asset": "FCUSD",
+              "amount": "1000001",
+              "mandateDigest": "sha256:a13f63922c4efd74e44d14ec03a2bf7293de03bd5fcfe91a9990e6f8b042cf46",
+              "paymentId": "pay-001"
+            },
+            "now_iso": "2026-09-10T00:00:00Z"
+          }
+        }
+      ],
+      "expect": {
+        "verdict": "deny",
+        "code": "scope_exceeded"
+      },
+      "note": null
+    },
+    {
+      "id": "auth-05-unauthorized-recipient",
+      "attacks": "recipient scope fails closed",
+      "ops": [
+        {
+          "id": "a",
+          "op": "authorize",
+          "args": {
+            "envelope": {
+              "mandate": {
+                "v": "x402-mandate/1",
+                "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+                "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+                "asset": "FCUSD",
+                "cap": "1000000",
+                "perPayment": "250000",
+                "recipients": [
+                  "merchant.example",
+                  "api.vendor.example"
+                ],
+                "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+                "purpose": "conformance vectors — model A",
+                "notAfter": "2027-01-01T00:00:00Z",
+                "nonce": "authority-vec-a-001"
+              },
+              "alg": "Ed25519",
+              "sig": "Kvggg4hh76z8PngCRDjcwHELBw7RJ4hECAGqqmDOpVSbIzce40T7quwC_vjm8Aab3SPRUB5ZPywfoDFwvra_AQ"
+            },
+            "payment": {
+              "payer": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "recipient": "evil.example",
+              "asset": "FCUSD",
+              "amount": "1000",
+              "mandateDigest": "sha256:445fed871d7c43d2b775e68124103c77646fc0f096fb42c9ea3d9f00c960ca05",
+              "paymentId": "pay-001"
+            },
+            "now_iso": "2026-09-10T00:00:00Z"
+          }
+        }
+      ],
+      "expect": {
+        "verdict": "deny",
+        "code": "request_mismatch"
+      },
+      "note": null
+    },
+    {
+      "id": "auth-06-wrong-asset",
+      "attacks": "asset must match exactly",
+      "ops": [
+        {
+          "id": "a",
+          "op": "authorize",
+          "args": {
+            "envelope": {
+              "mandate": {
+                "v": "x402-mandate/1",
+                "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+                "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+                "asset": "FCUSD",
+                "cap": "1000000",
+                "perPayment": "250000",
+                "recipients": [
+                  "merchant.example",
+                  "api.vendor.example"
+                ],
+                "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+                "purpose": "conformance vectors — model A",
+                "notAfter": "2027-01-01T00:00:00Z",
+                "nonce": "authority-vec-a-001"
+              },
+              "alg": "Ed25519",
+              "sig": "Kvggg4hh76z8PngCRDjcwHELBw7RJ4hECAGqqmDOpVSbIzce40T7quwC_vjm8Aab3SPRUB5ZPywfoDFwvra_AQ"
+            },
+            "payment": {
+              "payer": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "recipient": "merchant.example",
+              "asset": "USDC",
+              "amount": "1000",
+              "mandateDigest": "sha256:445fed871d7c43d2b775e68124103c77646fc0f096fb42c9ea3d9f00c960ca05",
+              "paymentId": "pay-001"
+            },
+            "now_iso": "2026-09-10T00:00:00Z"
+          }
+        }
+      ],
+      "expect": {
+        "verdict": "deny",
+        "code": "request_mismatch"
+      },
+      "note": null
+    },
+    {
+      "id": "auth-07-expired-authority",
+      "attacks": "expiry uses the VERIFIER clock",
+      "ops": [
+        {
+          "id": "a",
+          "op": "authorize",
+          "args": {
+            "envelope": {
+              "mandate": {
+                "v": "x402-mandate/1",
+                "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+                "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+                "asset": "FCUSD",
+                "cap": "1000000",
+                "perPayment": "250000",
+                "recipients": [
+                  "merchant.example",
+                  "api.vendor.example"
+                ],
+                "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+                "purpose": "conformance vectors — model A",
+                "notAfter": "2020-01-01T00:00:00Z",
+                "nonce": "expired-001"
+              },
+              "alg": "Ed25519",
+              "sig": "Gq-IVzTA8z7RINKZatiEFyR-I-hV8RxjROCddvL45fEqXi36zLQ9DUQadx_SggJa5nG0E_QFwUR3cOP1v_uqAw"
+            },
+            "payment": {
+              "payer": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "recipient": "merchant.example",
+              "asset": "FCUSD",
+              "amount": "1000",
+              "mandateDigest": "sha256:43fa3ff0a6bd1342cbbe16d51a3065543b66e72e3da8bb16e132ba6730b6f1f5",
+              "paymentId": "pay-001"
+            },
+            "now_iso": "2026-09-10T00:00:00Z"
+          }
+        }
+      ],
+      "expect": {
+        "verdict": "deny",
+        "code": "expired"
+      },
+      "note": null
+    },
+    {
+      "id": "auth-08-payer-at-does-not-extend",
+      "attacks": "a payer-supplied `at` is advisory and MUST NOT extend authorization",
+      "ops": [
+        {
+          "id": "a",
+          "op": "authorize",
+          "args": {
+            "envelope": {
+              "mandate": {
+                "v": "x402-mandate/1",
+                "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+                "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+                "asset": "FCUSD",
+                "cap": "1000000",
+                "perPayment": "250000",
+                "recipients": [
+                  "merchant.example",
+                  "api.vendor.example"
+                ],
+                "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+                "purpose": "conformance vectors — model A",
+                "notAfter": "2020-01-01T00:00:00Z",
+                "nonce": "expired-001"
+              },
+              "alg": "Ed25519",
+              "sig": "Gq-IVzTA8z7RINKZatiEFyR-I-hV8RxjROCddvL45fEqXi36zLQ9DUQadx_SggJa5nG0E_QFwUR3cOP1v_uqAw"
+            },
+            "payment": {
+              "payer": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "recipient": "merchant.example",
+              "asset": "FCUSD",
+              "amount": "1000",
+              "mandateDigest": "sha256:43fa3ff0a6bd1342cbbe16d51a3065543b66e72e3da8bb16e132ba6730b6f1f5",
+              "paymentId": "pay-001",
+              "at": "2019-01-01T00:00:00Z"
+            },
+            "now_iso": "2026-09-10T00:00:00Z"
+          }
+        }
+      ],
+      "expect": {
+        "verdict": "deny",
+        "code": "expired"
+      },
+      "note": null
+    },
+    {
+      "id": "auth-09-bad-alg-refused",
+      "attacks": "Ed25519 is the sole legal alg",
+      "ops": [
+        {
+          "id": "a",
+          "op": "authorize",
+          "args": {
+            "envelope": {
+              "mandate": {
+                "v": "x402-mandate/1",
+                "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+                "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+                "asset": "FCUSD",
+                "cap": "1000000",
+                "perPayment": "250000",
+                "recipients": [
+                  "merchant.example",
+                  "api.vendor.example"
+                ],
+                "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+                "purpose": "conformance vectors — model A",
+                "notAfter": "2027-01-01T00:00:00Z",
+                "nonce": "authority-vec-a-001"
+              },
+              "alg": "ES256",
+              "sig": "Kvggg4hh76z8PngCRDjcwHELBw7RJ4hECAGqqmDOpVSbIzce40T7quwC_vjm8Aab3SPRUB5ZPywfoDFwvra_AQ"
+            },
+            "payment": {
+              "payer": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "recipient": "merchant.example",
+              "asset": "FCUSD",
+              "amount": "1000",
+              "mandateDigest": "sha256:445fed871d7c43d2b775e68124103c77646fc0f096fb42c9ea3d9f00c960ca05",
+              "paymentId": "pay-001"
+            },
+            "now_iso": "2026-09-10T00:00:00Z"
+          }
+        }
+      ],
+      "expect": {
+        "verdict": "deny",
+        "code": "invalid_signature"
+      },
+      "note": null
+    },
+    {
+      "id": "auth-10-unknown-member-refused",
+      "attacks": "an unknown mandate member must refuse, not be ignored",
+      "ops": [
+        {
+          "id": "a",
+          "op": "mandate_shape",
+          "args": {
+            "mandate": {
+              "v": "x402-mandate/1",
+              "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+              "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "asset": "FCUSD",
+              "cap": "1000000",
+              "perPayment": "250000",
+              "recipients": [
+                "merchant.example",
+                "api.vendor.example"
+              ],
+              "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+              "purpose": "conformance vectors — model A",
+              "notAfter": "2027-01-01T00:00:00Z",
+              "nonce": "authority-vec-a-001",
+              "extraField": "x"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "ok": false,
+        "code": "invalid_bundle"
+      },
+      "note": null
+    },
+    {
+      "id": "auth-11-wildcard-mixed-invalid",
+      "attacks": "\"*\" mixed with any other element is INVALID",
+      "ops": [
+        {
+          "id": "a",
+          "op": "mandate_shape",
+          "args": {
+            "mandate": {
+              "v": "x402-mandate/1",
+              "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+              "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "asset": "FCUSD",
+              "cap": "1000000",
+              "perPayment": "250000",
+              "recipients": [
+                "*",
+                "merchant.example"
+              ],
+              "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+              "purpose": "conformance vectors — model A",
+              "notAfter": "2027-01-01T00:00:00Z",
+              "nonce": "authority-vec-a-001"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "ok": false,
+        "code": "invalid_bundle"
+      },
+      "note": null
+    },
+    {
+      "id": "auth-12-empty-recipients-invalid",
+      "attacks": "an empty recipient array fails closed",
+      "ops": [
+        {
+          "id": "a",
+          "op": "mandate_shape",
+          "args": {
+            "mandate": {
+              "v": "x402-mandate/1",
+              "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+              "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "asset": "FCUSD",
+              "cap": "1000000",
+              "perPayment": "250000",
+              "recipients": [],
+              "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+              "purpose": "conformance vectors — model A",
+              "notAfter": "2027-01-01T00:00:00Z",
+              "nonce": "authority-vec-a-001"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "ok": false,
+        "code": "invalid_bundle"
+      },
+      "note": null
+    },
+    {
+      "id": "auth-13-overflowing-date-invalid",
+      "attacks": "a shape-valid but overflowing date must not be leniently normalized",
+      "ops": [
+        {
+          "id": "a",
+          "op": "mandate_shape",
+          "args": {
+            "mandate": {
+              "v": "x402-mandate/1",
+              "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+              "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "asset": "FCUSD",
+              "cap": "1000000",
+              "perPayment": "250000",
+              "recipients": [
+                "merchant.example",
+                "api.vendor.example"
+              ],
+              "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+              "purpose": "conformance vectors — model A",
+              "notAfter": "2027-02-30T00:00:00Z",
+              "nonce": "authority-vec-a-001"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "ok": false,
+        "code": "invalid_bundle"
+      },
+      "note": null
+    },
+    {
+      "id": "auth-14-lone-surrogate-purpose-totality",
+      "attacks": "a malformed purpose refuses WITHOUT throwing (section 6 totality)",
+      "ops": [
+        {
+          "id": "a",
+          "op": "mandate_shape",
+          "args": {
+            "mandate": {
+              "v": "x402-mandate/1",
+              "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+              "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "asset": "FCUSD",
+              "cap": "1000000",
+              "perPayment": "250000",
+              "recipients": [
+                "merchant.example",
+                "api.vendor.example"
+              ],
+              "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+              "purpose": "bad\ud800",
+              "notAfter": "2027-01-01T00:00:00Z",
+              "nonce": "authority-vec-a-001"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "ok": false,
+        "code": "invalid_bundle"
+      },
+      "note": null
+    },
+    {
+      "id": "bind-01-three-scheme-encodings",
+      "attacks": "one B, three renderings: 0x-lowerhex, decimal uint256, UPPERCASE hex",
+      "ops": [
+        {
+          "id": "a",
+          "op": "binding",
+          "args": {
+            "mandateDigest": "sha256:445fed871d7c43d2b775e68124103c77646fc0f096fb42c9ea3d9f00c960ca05",
+            "paymentId": "pay-001"
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "node_equals_python": true
+      },
+      "note": null
+    },
+    {
+      "id": "bind-02-wrong-payment-id",
+      "attacks": "a different paymentId yields a different binding",
+      "ops": [
+        {
+          "id": "a",
+          "op": "binding",
+          "args": {
+            "mandateDigest": "sha256:445fed871d7c43d2b775e68124103c77646fc0f096fb42c9ea3d9f00c960ca05",
+            "paymentId": "pay-001"
+          }
+        },
+        {
+          "id": "b",
+          "op": "binding",
+          "args": {
+            "mandateDigest": "sha256:445fed871d7c43d2b775e68124103c77646fc0f096fb42c9ea3d9f00c960ca05",
+            "paymentId": "pay-002"
+          }
+        }
+      ],
+      "expect": {
+        "a_differs_from_b": true
+      },
+      "note": null
+    },
+    {
+      "id": "bind-03-digest-prefix-must-be-retained",
+      "attacks": "the sha256: prefix is part of the preimage; stripping it changes B",
+      "ops": [
+        {
+          "id": "a",
+          "op": "binding",
+          "args": {
+            "mandateDigest": "sha256:445fed871d7c43d2b775e68124103c77646fc0f096fb42c9ea3d9f00c960ca05",
+            "paymentId": "pay-001"
+          }
+        },
+        {
+          "id": "b",
+          "op": "binding",
+          "args": {
+            "mandateDigest": "445fed871d7c43d2b775e68124103c77646fc0f096fb42c9ea3d9f00c960ca05",
+            "paymentId": "pay-001"
+          }
+        }
+      ],
+      "expect": {
+        "b_refused_or_differs": true
+      },
+      "note": null
+    },
+    {
+      "id": "bind-04-out-of-grammar-payment-id",
+      "attacks": "a paymentId with an anchor-grammar separator must be refused",
+      "ops": [
+        {
+          "id": "a",
+          "op": "binding",
+          "args": {
+            "mandateDigest": "sha256:445fed871d7c43d2b775e68124103c77646fc0f096fb42c9ea3d9f00c960ca05",
+            "paymentId": "pay;001"
+          }
+        }
+      ],
+      "expect": {
+        "ok": false
+      },
+      "note": null
+    },
+    {
+      "id": "split-01-authorized-then-overspent",
+      "attacks": "ALLOW pre-settlement, REFUTED post-settlement on AMOUNT",
+      "ops": [
+        {
+          "id": "pre",
+          "op": "authorize",
+          "args": {
+            "envelope": {
+              "mandate": {
+                "v": "x402-mandate/1",
+                "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+                "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+                "asset": "FCUSD",
+                "cap": "1000000",
+                "perPayment": "250000",
+                "recipients": [
+                  "merchant.example",
+                  "api.vendor.example"
+                ],
+                "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+                "purpose": "conformance vectors — model A",
+                "notAfter": "2027-01-01T00:00:00Z",
+                "nonce": "authority-vec-a-001"
+              },
+              "alg": "Ed25519",
+              "sig": "Kvggg4hh76z8PngCRDjcwHELBw7RJ4hECAGqqmDOpVSbIzce40T7quwC_vjm8Aab3SPRUB5ZPywfoDFwvra_AQ"
+            },
+            "payment": {
+              "payer": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "recipient": "merchant.example",
+              "asset": "FCUSD",
+              "amount": "1000",
+              "mandateDigest": "sha256:445fed871d7c43d2b775e68124103c77646fc0f096fb42c9ea3d9f00c960ca05",
+              "paymentId": "pay-001"
+            },
+            "now_iso": "2026-09-10T00:00:00Z"
+          }
+        },
+        {
+          "id": "post",
+          "op": "settle_compare",
+          "args": {
+            "envelope": {
+              "mandate": {
+                "v": "x402-mandate/1",
+                "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+                "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+                "asset": "FCUSD",
+                "cap": "1000000",
+                "perPayment": "250000",
+                "recipients": [
+                  "merchant.example",
+                  "api.vendor.example"
+                ],
+                "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+                "purpose": "conformance vectors — model A",
+                "notAfter": "2027-01-01T00:00:00Z",
+                "nonce": "authority-vec-a-001"
+              },
+              "alg": "Ed25519",
+              "sig": "Kvggg4hh76z8PngCRDjcwHELBw7RJ4hECAGqqmDOpVSbIzce40T7quwC_vjm8Aab3SPRUB5ZPywfoDFwvra_AQ"
+            },
+            "paymentId": "pay-001",
+            "settled": {
+              "payer": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "recipient": "merchant.example",
+              "asset": "FCUSD",
+              "amount": "900000",
+              "scheme": "eip3009",
+              "slot": "0x5aa71c23c84e6763bdb31a473f1981fd37ccf93945205b77eb84e0c271c1e74b"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "pre_verdict": "allow",
+        "post_verdict": "refuted"
+      },
+      "note": "The agent was authorized for 1000 and the rail actually moved 900000. The binding slot still matches -- the slot binds (mandate, paymentId) and CANNOT constrain value. This is the whole thesis in two verdicts."
+    },
+    {
+      "id": "split-02-authorized-then-wrong-recipient",
+      "attacks": "ALLOW pre-settlement, REFUTED post-settlement on RECIPIENT",
+      "ops": [
+        {
+          "id": "pre",
+          "op": "authorize",
+          "args": {
+            "envelope": {
+              "mandate": {
+                "v": "x402-mandate/1",
+                "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+                "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+                "asset": "FCUSD",
+                "cap": "1000000",
+                "perPayment": "250000",
+                "recipients": [
+                  "merchant.example",
+                  "api.vendor.example"
+                ],
+                "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+                "purpose": "conformance vectors — model A",
+                "notAfter": "2027-01-01T00:00:00Z",
+                "nonce": "authority-vec-a-001"
+              },
+              "alg": "Ed25519",
+              "sig": "Kvggg4hh76z8PngCRDjcwHELBw7RJ4hECAGqqmDOpVSbIzce40T7quwC_vjm8Aab3SPRUB5ZPywfoDFwvra_AQ"
+            },
+            "payment": {
+              "payer": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "recipient": "merchant.example",
+              "asset": "FCUSD",
+              "amount": "1000",
+              "mandateDigest": "sha256:445fed871d7c43d2b775e68124103c77646fc0f096fb42c9ea3d9f00c960ca05",
+              "paymentId": "pay-001"
+            },
+            "now_iso": "2026-09-10T00:00:00Z"
+          }
+        },
+        {
+          "id": "post",
+          "op": "settle_compare",
+          "args": {
+            "envelope": {
+              "mandate": {
+                "v": "x402-mandate/1",
+                "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+                "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+                "asset": "FCUSD",
+                "cap": "1000000",
+                "perPayment": "250000",
+                "recipients": [
+                  "merchant.example",
+                  "api.vendor.example"
+                ],
+                "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+                "purpose": "conformance vectors — model A",
+                "notAfter": "2027-01-01T00:00:00Z",
+                "nonce": "authority-vec-a-001"
+              },
+              "alg": "Ed25519",
+              "sig": "Kvggg4hh76z8PngCRDjcwHELBw7RJ4hECAGqqmDOpVSbIzce40T7quwC_vjm8Aab3SPRUB5ZPywfoDFwvra_AQ"
+            },
+            "paymentId": "pay-001",
+            "settled": {
+              "payer": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "recipient": "evil.example",
+              "asset": "FCUSD",
+              "amount": "1000",
+              "scheme": "eip3009",
+              "slot": "0x5aa71c23c84e6763bdb31a473f1981fd37ccf93945205b77eb84e0c271c1e74b"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "pre_verdict": "allow",
+        "post_verdict": "refuted"
+      },
+      "note": null
+    },
+    {
+      "id": "split-03-authorized-and-complied",
+      "attacks": "the honest case: ALLOW and COMPLIED",
+      "ops": [
+        {
+          "id": "pre",
+          "op": "authorize",
+          "args": {
+            "envelope": {
+              "mandate": {
+                "v": "x402-mandate/1",
+                "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+                "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+                "asset": "FCUSD",
+                "cap": "1000000",
+                "perPayment": "250000",
+                "recipients": [
+                  "merchant.example",
+                  "api.vendor.example"
+                ],
+                "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+                "purpose": "conformance vectors — model A",
+                "notAfter": "2027-01-01T00:00:00Z",
+                "nonce": "authority-vec-a-001"
+              },
+              "alg": "Ed25519",
+              "sig": "Kvggg4hh76z8PngCRDjcwHELBw7RJ4hECAGqqmDOpVSbIzce40T7quwC_vjm8Aab3SPRUB5ZPywfoDFwvra_AQ"
+            },
+            "payment": {
+              "payer": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "recipient": "merchant.example",
+              "asset": "FCUSD",
+              "amount": "1000",
+              "mandateDigest": "sha256:445fed871d7c43d2b775e68124103c77646fc0f096fb42c9ea3d9f00c960ca05",
+              "paymentId": "pay-001"
+            },
+            "now_iso": "2026-09-10T00:00:00Z"
+          }
+        },
+        {
+          "id": "post",
+          "op": "settle_compare",
+          "args": {
+            "envelope": {
+              "mandate": {
+                "v": "x402-mandate/1",
+                "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+                "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+                "asset": "FCUSD",
+                "cap": "1000000",
+                "perPayment": "250000",
+                "recipients": [
+                  "merchant.example",
+                  "api.vendor.example"
+                ],
+                "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+                "purpose": "conformance vectors — model A",
+                "notAfter": "2027-01-01T00:00:00Z",
+                "nonce": "authority-vec-a-001"
+              },
+              "alg": "Ed25519",
+              "sig": "Kvggg4hh76z8PngCRDjcwHELBw7RJ4hECAGqqmDOpVSbIzce40T7quwC_vjm8Aab3SPRUB5ZPywfoDFwvra_AQ"
+            },
+            "paymentId": "pay-001",
+            "settled": {
+              "payer": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "recipient": "merchant.example",
+              "asset": "FCUSD",
+              "amount": "1000",
+              "scheme": "eip3009",
+              "slot": "0x5aa71c23c84e6763bdb31a473f1981fd37ccf93945205b77eb84e0c271c1e74b"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "pre_verdict": "allow",
+        "post_verdict": "complied"
+      },
+      "note": null
+    },
+    {
+      "id": "split-04-settled-under-report",
+      "attacks": "a smaller COMMITTED amount than the decoded one is a commitment mismatch",
+      "ops": [
+        {
+          "id": "post",
+          "op": "settle_compare",
+          "args": {
+            "envelope": {
+              "mandate": {
+                "v": "x402-mandate/1",
+                "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+                "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+                "asset": "FCUSD",
+                "cap": "1000000",
+                "perPayment": "250000",
+                "recipients": [
+                  "merchant.example",
+                  "api.vendor.example"
+                ],
+                "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+                "purpose": "conformance vectors — model A",
+                "notAfter": "2027-01-01T00:00:00Z",
+                "nonce": "authority-vec-a-001"
+              },
+              "alg": "Ed25519",
+              "sig": "Kvggg4hh76z8PngCRDjcwHELBw7RJ4hECAGqqmDOpVSbIzce40T7quwC_vjm8Aab3SPRUB5ZPywfoDFwvra_AQ"
+            },
+            "paymentId": "pay-001",
+            "settled": {
+              "payer": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "recipient": "merchant.example",
+              "asset": "FCUSD",
+              "amount": "5000",
+              "scheme": "eip3009",
+              "slot": "0x5aa71c23c84e6763bdb31a473f1981fd37ccf93945205b77eb84e0c271c1e74b"
+            },
+            "committedAmount": "1000"
+          }
+        }
+      ],
+      "expect": {
+        "post_verdict": "refuted",
+        "code": "request_mismatch"
+      },
+      "note": null
+    },
+    {
+      "id": "split-05-wrong-binding-slot",
+      "attacks": "the slot is read from the settled artifact and must match",
+      "ops": [
+        {
+          "id": "post",
+          "op": "settle_compare",
+          "args": {
+            "envelope": {
+              "mandate": {
+                "v": "x402-mandate/1",
+                "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+                "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+                "asset": "FCUSD",
+                "cap": "1000000",
+                "perPayment": "250000",
+                "recipients": [
+                  "merchant.example",
+                  "api.vendor.example"
+                ],
+                "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+                "purpose": "conformance vectors — model A",
+                "notAfter": "2027-01-01T00:00:00Z",
+                "nonce": "authority-vec-a-001"
+              },
+              "alg": "Ed25519",
+              "sig": "Kvggg4hh76z8PngCRDjcwHELBw7RJ4hECAGqqmDOpVSbIzce40T7quwC_vjm8Aab3SPRUB5ZPywfoDFwvra_AQ"
+            },
+            "paymentId": "pay-001",
+            "settled": {
+              "payer": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "recipient": "merchant.example",
+              "asset": "FCUSD",
+              "amount": "1000",
+              "scheme": "eip3009",
+              "slot": "0x0000000000000000000000000000000000000000000000000000000000000000"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "post_verdict": "refuted"
+      },
+      "note": null
+    },
+    {
+      "id": "split-06-partial-binding-info",
+      "attacks": "scheme without slot fails closed, not treated as a sanctioned omission of both",
+      "ops": [
+        {
+          "id": "post",
+          "op": "settle_compare",
+          "args": {
+            "envelope": {
+              "mandate": {
+                "v": "x402-mandate/1",
+                "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+                "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+                "asset": "FCUSD",
+                "cap": "1000000",
+                "perPayment": "250000",
+                "recipients": [
+                  "merchant.example",
+                  "api.vendor.example"
+                ],
+                "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+                "purpose": "conformance vectors — model A",
+                "notAfter": "2027-01-01T00:00:00Z",
+                "nonce": "authority-vec-a-001"
+              },
+              "alg": "Ed25519",
+              "sig": "Kvggg4hh76z8PngCRDjcwHELBw7RJ4hECAGqqmDOpVSbIzce40T7quwC_vjm8Aab3SPRUB5ZPywfoDFwvra_AQ"
+            },
+            "paymentId": "pay-001",
+            "settled": {
+              "payer": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "recipient": "merchant.example",
+              "asset": "FCUSD",
+              "amount": "1000",
+              "scheme": "eip3009"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "post_verdict": "refuted",
+        "code": "malformed_input"
+      },
+      "note": null
+    },
+    {
+      "id": "split-07-undefined-scheme-token-refuted",
+      "attacks": "the spec defines NO wire token for `scheme`; a plausible reading refutes a COMPLIANT settlement",
+      "ops": [
+        {
+          "id": "post",
+          "op": "settle_compare",
+          "args": {
+            "envelope": {
+              "mandate": {
+                "v": "x402-mandate/1",
+                "issuer": "ZpxwxbuTQMjJCKTuNk6E-qHD4wGTc7QJ8yYPUdUvSm8",
+                "subject": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+                "asset": "FCUSD",
+                "cap": "1000000",
+                "perPayment": "250000",
+                "recipients": [
+                  "merchant.example",
+                  "api.vendor.example"
+                ],
+                "accountant": "M16cS6EkFTGx6nsxHb5QM0yn-dzWlxHsrbFsEhJ7il8",
+                "purpose": "conformance vectors — model A",
+                "notAfter": "2027-01-01T00:00:00Z",
+                "nonce": "authority-vec-a-001"
+              },
+              "alg": "Ed25519",
+              "sig": "Kvggg4hh76z8PngCRDjcwHELBw7RJ4hECAGqqmDOpVSbIzce40T7quwC_vjm8Aab3SPRUB5ZPywfoDFwvra_AQ"
+            },
+            "paymentId": "pay-001",
+            "settled": {
+              "payer": "HMcvJ5nY6DANhYEDgfaEHjR5Ur7xbfmqwbOn2kG5qE8",
+              "recipient": "merchant.example",
+              "asset": "FCUSD",
+              "amount": "1000",
+              "scheme": "eip-3009",
+              "slot": "0x5aa71c23c84e6763bdb31a473f1981fd37ccf93945205b77eb84e0c271c1e74b"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "post_verdict": "refuted",
+        "code_unspecified_divergence": [
+          "code"
+        ]
+      },
+      "note": "FROZEN REPRODUCTION of defect D-3. Everything here is correct -- right mandate, right amount, right recipient, right binding slot -- and the settlement is still refuted, purely because \"EIP-3009\" from the prose table was written as `eip-3009` instead of the `eip3009` used as an object key in the fixture. Fail-closed is the right behaviour; the missing normative token is the defect. SECOND FACET: the two implementations also disagree on the reason CODE (invalid_proof vs malformed_input) because the spec names neither. The vector therefore asserts only the security-relevant property -- BOTH refute -- and records the code divergence rather than forcing agreement on a value no spec text supports."
+    }
+  ]
+}

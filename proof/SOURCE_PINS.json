@@ -1,0 +1,60 @@
+{
+  "schema": "stillos-proof-source-pins/1",
+  "pinned_at": "2026-09-10T15:10:40.353Z",
+  "previous_pinned_at": null,
+  "note": "Every result in PROOF.md is against exactly these revisions. Regenerate with `node proof/tools/pin_sources.cjs` and re-run ./prove.sh before citing a result.",
+  "sources": {
+    "x402#3220": {
+      "kind": "pull_request",
+      "url": "https://github.com/x402-foundation/x402/pull/3220",
+      "number": 3220,
+      "title": "Add `authority` extension: bounded, offline-verifiable spending mandates",
+      "author": "whawk46",
+      "state": "open",
+      "merged": false,
+      "head_sha": "72c3704dfb89851fb7b1f0dca4d327b804faee5c",
+      "base_sha": "7d5363a6d51750dc246041f2b0ed5819dd46a0d7",
+      "updated_at": "2026-09-09T03:56:35Z"
+    },
+    "x402#3376": {
+      "kind": "pull_request",
+      "url": "https://github.com/x402-foundation/x402/pull/3376",
+      "number": 3376,
+      "title": "Add authorization-evidence extension to the TypeScript SDK",
+      "author": "saneGuy",
+      "state": "open",
+      "merged": false,
+      "head_sha": "2649525285bcf73dd317326234765393700e1640",
+      "base_sha": "4e15690028cf6d66b35e44a8128da47da9b92a4d",
+      "updated_at": "2026-09-08T13:06:25Z"
+    },
+    "x402#3389": {
+      "kind": "issue",
+      "url": "https://github.com/x402-foundation/x402/issues/3389",
+      "number": 3389,
+      "title": "[Feature]: [Proposal] stark-receipt — an offline-verifiable, anchored receipt profile for offer-receipt",
+      "author": "seritalien",
+      "state": "open",
+      "comments": 15,
+      "updated_at": "2026-09-10T10:25:31Z"
+    },
+    "vauban/stark-receipt-profile": {
+      "kind": "file",
+      "repo": "vauban-org/x402-starknet",
+      "path": "docs/stark-receipt-profile-v0.1.md",
+      "repo_head_sha": "260c8738daf0c3b07fbabe450d7f9d690f2c0976",
+      "repo_head_date": "2026-09-09T06:28:04Z",
+      "file_last_commit_sha": "260c8738daf0c3b07fbabe450d7f9d690f2c0976",
+      "file_last_commit_date": "2026-09-09T06:28:04Z",
+      "file_last_commit_subject": "docs: a settlement from another chain (BASE_SETTLEMENT_V1), and no Base seal claim"
+    }
+  },
+  "local_repos": {
+    "stillmarcus24/x402-authority-verifier-kit": {
+      "head_sha": "35e209d5b994ef817519b1ac0ae1f03f2bdf4d5f",
+      "clean": false
+    }
+  },
+  "drift_detected": [],
+  "endorsement_disclaimer": "Both x402 PRs are third-party, open and unmerged. The Vauban profile is a third-party draft. Nothing in this file or repository constitutes review, acceptance or endorsement by whawk46, saneGuy, seritalien, goun7, Vauban Pay, Tamga, Apodix, Bolyra, Coinbase or the x402-foundation maintainers."
+}

@@ -5,7 +5,8 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "test": "node vectors/run_conformance.cjs"
+    "test": "node vectors/run_conformance.cjs",
+    "prove": "./prove.sh"
   },
   "engines": {
     "node": ">=18"

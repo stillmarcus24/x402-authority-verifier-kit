@@ -1,0 +1,1876 @@
+{
+  "schema": "stillos-assurance-corpus-results/1",
+  "vector_count": 69,
+  "passed": 69,
+  "failed": 0,
+  "rule": "A vector passes only when BOTH implementations agree with the expectation AND with each other.",
+  "rows": [
+    {
+      "id": "canon-01-field-reordering",
+      "attacks": "canonical field reordering must not change the digest",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": true,
+          "canonical": "{\"a\":\"1\",\"b\":\"2\",\"c\":\"3\"}",
+          "sha256": "4e75b6b87b799c6d1a635d57f9ffc03b5276f1953a18afc8a7d8eb459cd13a3f"
+        },
+        "b": {
+          "ok": true,
+          "canonical": "{\"a\":\"1\",\"b\":\"2\",\"c\":\"3\"}",
+          "sha256": "4e75b6b87b799c6d1a635d57f9ffc03b5276f1953a18afc8a7d8eb459cd13a3f"
+        }
+      },
+      "python_result": {
+        "a": {
+          "ok": true,
+          "canonical": "{\"a\":\"1\",\"b\":\"2\",\"c\":\"3\"}",
+          "sha256": "4e75b6b87b799c6d1a635d57f9ffc03b5276f1953a18afc8a7d8eb459cd13a3f"
+        },
+        "b": {
+          "ok": true,
+          "canonical": "{\"a\":\"1\",\"b\":\"2\",\"c\":\"3\"}",
+          "sha256": "4e75b6b87b799c6d1a635d57f9ffc03b5276f1953a18afc8a7d8eb459cd13a3f"
+        }
+      }
+    },
+    {
+      "id": "canon-02-utf16-key-order-astral",
+      "attacks": "RFC 8785 3.2.3 sorts keys by UTF-16 code UNITS, not code points",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": true,
+          "canonical": "{\"😀\":1,\"＀\":2}",
+          "sha256": "6dc365617ce85847b89a0303d89d1ab8c9967ffaa3909584c9cef6fb901cb6eb"
+        }
+      },
+      "python_result": {
+        "a": {
+          "ok": true,
+          "canonical": "{\"😀\":1,\"＀\":2}",
+          "sha256": "6dc365617ce85847b89a0303d89d1ab8c9967ffaa3909584c9cef6fb901cb6eb"
+        }
+      }
+    },
+    {
+      "id": "canon-03-unicode-nfc-vs-nfd",
+      "attacks": "JCS MUST NOT normalize; NFC and NFD are different digests",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "nfc": {
+          "ok": true,
+          "canonical": "{\"k\":\"é\"}",
+          "sha256": "0ca09f1dffb485d259fc791100d48ad7ae9c17f52a2bb07b608c0e28fbca34a1"
+        },
+        "nfd": {
+          "ok": true,
+          "canonical": "{\"k\":\"é\"}",
+          "sha256": "4cb477ab754099c91e4c79f77deaab085090978b8abbc981c8eefde872575da8"
+        }
+      },
+      "python_result": {
+        "nfc": {
+          "ok": true,
+          "canonical": "{\"k\":\"é\"}",
+          "sha256": "0ca09f1dffb485d259fc791100d48ad7ae9c17f52a2bb07b608c0e28fbca34a1"
+        },
+        "nfd": {
+          "ok": true,
+          "canonical": "{\"k\":\"é\"}",
+          "sha256": "4cb477ab754099c91e4c79f77deaab085090978b8abbc981c8eefde872575da8"
+        }
+      }
+    },
+    {
+      "id": "canon-04-lone-surrogate-refused",
+      "attacks": "an unpaired surrogate cannot be UTF-8 encoded",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": false,
+          "error": "jcs_lone_surrogate"
+        }
+      },
+      "python_result": {
+        "a": {
+          "ok": false,
+          "error": "jcs_lone_surrogate"
+        }
+      }
+    },
+    {
+      "id": "canon-05-integer-string-ambiguity",
+      "attacks": "a numeric amount and its decimal string are NOT the same record",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "num": {
+          "ok": true,
+          "canonical": "{\"amount\":1000}",
+          "sha256": "612612d208fb618eb2b007d2a7f8d7a1cfb511532389298f1cc33322c3094bcc"
+        },
+        "str": {
+          "ok": true,
+          "canonical": "{\"amount\":\"1000\"}",
+          "sha256": "071a78c49b5b55fb01f67a43e40116527224efa0aebfc02ee0408303e1746e26"
+        }
+      },
+      "python_result": {
+        "num": {
+          "ok": true,
+          "canonical": "{\"amount\":1000}",
+          "sha256": "612612d208fb618eb2b007d2a7f8d7a1cfb511532389298f1cc33322c3094bcc"
+        },
+        "str": {
+          "ok": true,
+          "canonical": "{\"amount\":\"1000\"}",
+          "sha256": "071a78c49b5b55fb01f67a43e40116527224efa0aebfc02ee0408303e1746e26"
+        }
+      }
+    },
+    {
+      "id": "canon-06-non-integer-refused",
+      "attacks": "out-of-profile floats are refused, never approximated",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": false,
+          "error": "jcs_non_integer_number_out_of_profile"
+        }
+      },
+      "python_result": {
+        "a": {
+          "ok": false,
+          "error": "jcs_non_integer_number_out_of_profile"
+        }
+      }
+    },
+    {
+      "id": "triple-01-high-bit-masking-material",
+      "attacks": "felt252 masking CHANGES the value (31 of 32 digests)",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "valid": true,
+          "alg": "sha-256",
+          "enc": "felt252-masked-251",
+          "full_hex": "0x636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "comparison_hex": "0x36ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "comparison_decimal": "1552632304146060783869816156250412455581151196508961142663261174776763925814",
+          "top5bits": 12,
+          "masking_is_noop": false,
+          "full_equals_stored": false
+        }
+      },
+      "python_result": {
+        "a": {
+          "valid": true,
+          "alg": "sha-256",
+          "enc": "felt252-masked-251",
+          "full_hex": "0x636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "comparison_hex": "0x36ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "comparison_decimal": "1552632304146060783869816156250412455581151196508961142663261174776763925814",
+          "top5bits": 12,
+          "masking_is_noop": false,
+          "full_equals_stored": false
+        }
+      }
+    },
+    {
+      "id": "triple-02-low-bit-masking-noop",
+      "attacks": "the 1-in-32 digest where masking is a no-op and a BROKEN verifier still passes",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "valid": true,
+          "alg": "sha-256",
+          "enc": "felt252-masked-251",
+          "full_hex": "0x02a5fc9b5bea33b328a3dbda35059c9515f84ce8eb8d7021f94f0409904f696f",
+          "comparison_hex": "0x2a5fc9b5bea33b328a3dbda35059c9515f84ce8eb8d7021f94f0409904f696f",
+          "comparison_decimal": "1197898891405854458431448226578697741538056499101909550563089309056814246255",
+          "top5bits": 0,
+          "masking_is_noop": true,
+          "full_equals_stored": true
+        }
+      },
+      "python_result": {
+        "a": {
+          "valid": true,
+          "alg": "sha-256",
+          "enc": "felt252-masked-251",
+          "full_hex": "0x02a5fc9b5bea33b328a3dbda35059c9515f84ce8eb8d7021f94f0409904f696f",
+          "comparison_hex": "0x2a5fc9b5bea33b328a3dbda35059c9515f84ce8eb8d7021f94f0409904f696f",
+          "comparison_decimal": "1197898891405854458431448226578697741538056499101909550563089309056814246255",
+          "top5bits": 0,
+          "masking_is_noop": true,
+          "full_equals_stored": true
+        }
+      }
+    },
+    {
+      "id": "triple-03-missing-enc",
+      "attacks": "a digest without enc is INVALID, not defaulted to none",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "valid": false,
+          "error": "missing_enc"
+        }
+      },
+      "python_result": {
+        "a": {
+          "valid": false,
+          "error": "missing_enc"
+        }
+      }
+    },
+    {
+      "id": "triple-04-unknown-enc",
+      "attacks": "an unrecognised enc must fail closed",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "valid": false,
+          "error": "unknown_enc"
+        }
+      },
+      "python_result": {
+        "a": {
+          "valid": false,
+          "error": "unknown_enc"
+        }
+      }
+    },
+    {
+      "id": "triple-05-missing-alg",
+      "attacks": "an unlabelled digest invites fake cross-ledger agreement",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "valid": false,
+          "error": "missing_alg"
+        }
+      },
+      "python_result": {
+        "a": {
+          "valid": false,
+          "error": "missing_alg"
+        }
+      }
+    },
+    {
+      "id": "triple-06-unknown-alg",
+      "attacks": "an unknown digest function must fail closed",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "valid": false,
+          "error": "unknown_alg"
+        }
+      },
+      "python_result": {
+        "a": {
+          "valid": false,
+          "error": "unknown_alg"
+        }
+      }
+    },
+    {
+      "id": "triple-07-uppercase-hex",
+      "attacks": "section 2.1 requires lowercase; uppercase must not silently pass",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "valid": false,
+          "error": "hex_not_lowercase"
+        }
+      },
+      "python_result": {
+        "a": {
+          "valid": false,
+          "error": "hex_not_lowercase"
+        }
+      }
+    },
+    {
+      "id": "triple-08-short-hex",
+      "attacks": "truncation must not be silently zero-padded",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "valid": false,
+          "error": "bad_hex_length"
+        }
+      },
+      "python_result": {
+        "a": {
+          "valid": false,
+          "error": "bad_hex_length"
+        }
+      }
+    },
+    {
+      "id": "triple-09-0x-prefix-equivalence",
+      "attacks": "section 2.2: 0x-prefixed and bare forms are the SAME value",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "bare": {
+          "valid": true,
+          "alg": "sha-256",
+          "enc": "none",
+          "full_hex": "0x636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "comparison_hex": "0x636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "comparison_decimal": "44974665768139634067708935534508377900557395446124172657459855177744187540790",
+          "top5bits": 12,
+          "masking_is_noop": true,
+          "full_equals_stored": true
+        },
+        "pref": {
+          "valid": true,
+          "alg": "sha-256",
+          "enc": "none",
+          "full_hex": "0x636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "comparison_hex": "0x636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "comparison_decimal": "44974665768139634067708935534508377900557395446124172657459855177744187540790",
+          "top5bits": 12,
+          "masking_is_noop": true,
+          "full_equals_stored": true
+        }
+      },
+      "python_result": {
+        "bare": {
+          "valid": true,
+          "alg": "sha-256",
+          "enc": "none",
+          "full_hex": "0x636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "comparison_hex": "0x636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "comparison_decimal": "44974665768139634067708935534508377900557395446124172657459855177744187540790",
+          "top5bits": 12,
+          "masking_is_noop": true,
+          "full_equals_stored": true
+        },
+        "pref": {
+          "valid": true,
+          "alg": "sha-256",
+          "enc": "none",
+          "full_hex": "0x636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "comparison_hex": "0x636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "comparison_decimal": "44974665768139634067708935534508377900557395446124172657459855177744187540790",
+          "top5bits": 12,
+          "masking_is_noop": true,
+          "full_equals_stored": true
+        }
+      }
+    },
+    {
+      "id": "triple-10-leading-zero-rendering",
+      "attacks": "a digest whose most significant byte is zero must render canonically",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "valid": true,
+          "alg": "sha-256",
+          "enc": "none",
+          "full_hex": "0x006ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "comparison_hex": "0x6ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "comparison_decimal": "195693758396261618749843675679851035425643563708485782825867612184031937846",
+          "top5bits": 0,
+          "masking_is_noop": true,
+          "full_equals_stored": true
+        }
+      },
+      "python_result": {
+        "a": {
+          "valid": true,
+          "alg": "sha-256",
+          "enc": "none",
+          "full_hex": "0x006ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "comparison_hex": "0x6ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "comparison_decimal": "195693758396261618749843675679851035425643563708485782825867612184031937846",
+          "top5bits": 0,
+          "masking_is_noop": true,
+          "full_equals_stored": true
+        }
+      }
+    },
+    {
+      "id": "leaf-01-limb-roundtrip",
+      "attacks": "section 4.2 limbs are lossless, low then high",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "enc": {
+          "ok": true,
+          "digest_D_decimal": "44974665768139634067708935534508377900557395446124172657459855177744187540790",
+          "digest_lo": "316796300310704499543803232519218414902",
+          "digest_hi": "132168663851421639234674382174282342923",
+          "digest_lo_hex": "0xee54bf83bd85759eadabf810230a4536",
+          "digest_hi_hex": "0x636ec23cec4628502312ddde24bc620b"
+        },
+        "dec": {
+          "ok": true,
+          "hex": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536"
+        }
+      },
+      "python_result": {
+        "enc": {
+          "digest_D_decimal": "44974665768139634067708935534508377900557395446124172657459855177744187540790",
+          "digest_lo": "316796300310704499543803232519218414902",
+          "digest_hi": "132168663851421639234674382174282342923",
+          "digest_lo_hex": "0xee54bf83bd85759eadabf810230a4536",
+          "digest_hi_hex": "0x636ec23cec4628502312ddde24bc620b",
+          "ok": true
+        },
+        "dec": {
+          "ok": true,
+          "hex": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536"
+        }
+      }
+    },
+    {
+      "id": "leaf-02-F1-empty-origin-tag",
+      "attacks": "refusal F1: a digest without a label is a number",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "provable": false,
+          "refusals": [
+            "F1@0"
+          ],
+          "K": 1,
+          "F": 1,
+          "root_domain_tag": "VZKPAY_AGGROOT_V3",
+          "pure_leaf_batch": false
+        }
+      },
+      "python_result": {
+        "a": {
+          "provable": false,
+          "refusals": [
+            "F1@0"
+          ],
+          "K": 1,
+          "F": 1,
+          "root_domain_tag": "VZKPAY_AGGROOT_V3",
+          "pure_leaf_batch": false
+        }
+      }
+    },
+    {
+      "id": "leaf-03-F2-zero-digest",
+      "attacks": "refusal F2: an all-zero digest is an unfilled field",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "provable": false,
+          "refusals": [
+            "F2@0"
+          ],
+          "K": 1,
+          "F": 1,
+          "root_domain_tag": "VZKPAY_AGGROOT_V3",
+          "pure_leaf_batch": false
+        }
+      },
+      "python_result": {
+        "a": {
+          "provable": false,
+          "refusals": [
+            "F2@0"
+          ],
+          "K": 1,
+          "F": 1,
+          "root_domain_tag": "VZKPAY_AGGROOT_V3",
+          "pure_leaf_batch": false
+        }
+      }
+    },
+    {
+      "id": "leaf-04-F3-duplicate-triple",
+      "attacks": "refusal F3: the bound is the TRIPLE, not the digest",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "provable": false,
+          "refusals": [
+            "F3@1"
+          ],
+          "K": 0,
+          "F": 2,
+          "root_domain_tag": "VZKPAY_AGGROOT_V3",
+          "pure_leaf_batch": true
+        }
+      },
+      "python_result": {
+        "a": {
+          "provable": false,
+          "refusals": [
+            "F3@1"
+          ],
+          "K": 0,
+          "F": 2,
+          "root_domain_tag": "VZKPAY_AGGROOT_V3",
+          "pure_leaf_batch": true
+        }
+      }
+    },
+    {
+      "id": "leaf-05-same-digest-two-labels-is-legal",
+      "attacks": "section 4.3: the same digest under two labels is LEGITIMATE",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "provable": true,
+          "refusals": [],
+          "K": 0,
+          "F": 2,
+          "root_domain_tag": "VZKPAY_AGGROOT_V3",
+          "pure_leaf_batch": true
+        }
+      },
+      "python_result": {
+        "a": {
+          "provable": true,
+          "refusals": [],
+          "K": 0,
+          "F": 2,
+          "root_domain_tag": "VZKPAY_AGGROOT_V3",
+          "pure_leaf_batch": true
+        }
+      }
+    },
+    {
+      "id": "leaf-06-F4-over-64-leaves",
+      "attacks": "refusal F4: a chosen bound of 64",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "provable": false,
+          "refusals": [
+            "F4"
+          ],
+          "K": 0,
+          "F": 65,
+          "root_domain_tag": "VZKPAY_AGGROOT_V3",
+          "pure_leaf_batch": true
+        }
+      },
+      "python_result": {
+        "a": {
+          "provable": false,
+          "refusals": [
+            "F4"
+          ],
+          "K": 0,
+          "F": 65,
+          "root_domain_tag": "VZKPAY_AGGROOT_V3",
+          "pure_leaf_batch": true
+        }
+      }
+    },
+    {
+      "id": "leaf-07-K0-F0-refused",
+      "attacks": "a batch that commits nothing would produce a constant root",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "provable": false,
+          "refusals": [
+            "K0F0"
+          ],
+          "K": 0,
+          "F": 0,
+          "root_domain_tag": "VZKPAY_AGGROOT_V3",
+          "pure_leaf_batch": false
+        }
+      },
+      "python_result": {
+        "a": {
+          "provable": false,
+          "refusals": [
+            "K0F0"
+          ],
+          "K": 0,
+          "F": 0,
+          "root_domain_tag": "VZKPAY_AGGROOT_V3",
+          "pure_leaf_batch": false
+        }
+      }
+    },
+    {
+      "id": "leaf-08-K0-F1-pure-leaf-legal",
+      "attacks": "K=0 with F>=1 is LEGAL -- anchoring without fabricating a payment",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "provable": true,
+          "refusals": [],
+          "K": 0,
+          "F": 1,
+          "root_domain_tag": "VZKPAY_AGGROOT_V3",
+          "pure_leaf_batch": true
+        }
+      },
+      "python_result": {
+        "a": {
+          "provable": true,
+          "refusals": [],
+          "K": 0,
+          "F": 1,
+          "root_domain_tag": "VZKPAY_AGGROOT_V3",
+          "pure_leaf_batch": true
+        }
+      }
+    },
+    {
+      "id": "leaf-09-origin-tag-31-byte-bound",
+      "attacks": "a Cairo short string is at most 31 ASCII bytes",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "ok": {
+          "ok": true,
+          "felt_decimal": "523066138601426308524177394834085769635092768042195789764145",
+          "felt_hex": "0x5354494c4c4f535f4e4f544152595f524543454950545f5631",
+          "byte_length": 25
+        },
+        "over": {
+          "ok": false,
+          "error": "tag_over_31_bytes"
+        }
+      },
+      "python_result": {
+        "ok": {
+          "ok": true,
+          "felt_decimal": "523066138601426308524177394834085769635092768042195789764145",
+          "felt_hex": "0x5354494c4c4f535f4e4f544152595f524543454950545f5631",
+          "byte_length": 25
+        },
+        "over": {
+          "ok": false,
+          "error": "tag_over_31_bytes"
+        }
+      }
+    },
+    {
+      "id": "leaf-10-unknown-origin-tag-is-indeterminate",
+      "attacks": "section 4.4: unknown label => indeterminate, NEVER absent",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "provable": true,
+          "refusals": [],
+          "K": 0,
+          "F": 1,
+          "root_domain_tag": "VZKPAY_AGGROOT_V3",
+          "pure_leaf_batch": true
+        }
+      },
+      "python_result": {
+        "a": {
+          "provable": true,
+          "refusals": [],
+          "K": 0,
+          "F": 1,
+          "root_domain_tag": "VZKPAY_AGGROOT_V3",
+          "pure_leaf_batch": true
+        }
+      }
+    },
+    {
+      "id": "base-01-seven-field-digest",
+      "attacks": "section 4.6 golden vector, computed independently by both implementations",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "valid": true,
+          "jcs": "{\"amount\":\"1000000\",\"asset\":\"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913\",\"network\":\"eip155:8453\",\"payTo\":\"0xa3a05818d4051bfa759fb7d936b57c072e4e0caf\",\"payer\":\"0x1111111111111111111111111111111111111111\",\"resource\":\"https://stillosdigitalholdings.com/notary/screen-url\",\"transaction\":\"0x2222222222222222222222222222222222222222222222222222222222222222\"}",
+          "digest_hex": "5434b1292a3c0810d8748148ebe7bc8d5308ebdc6460a778411eaf2be5cdb037"
+        }
+      },
+      "python_result": {
+        "a": {
+          "valid": true,
+          "jcs": "{\"amount\":\"1000000\",\"asset\":\"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913\",\"network\":\"eip155:8453\",\"payTo\":\"0xa3a05818d4051bfa759fb7d936b57c072e4e0caf\",\"payer\":\"0x1111111111111111111111111111111111111111\",\"resource\":\"https://stillosdigitalholdings.com/notary/screen-url\",\"transaction\":\"0x2222222222222222222222222222222222222222222222222222222222222222\"}",
+          "digest_hex": "5434b1292a3c0810d8748148ebe7bc8d5308ebdc6460a778411eaf2be5cdb037"
+        }
+      }
+    },
+    {
+      "id": "base-02-payTo-before-payer",
+      "attacks": "UTF-16 sort puts payTo BEFORE payer; a case-insensitive sort would not",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "valid": true,
+          "jcs": "{\"amount\":\"1000000\",\"asset\":\"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913\",\"network\":\"eip155:8453\",\"payTo\":\"0xa3a05818d4051bfa759fb7d936b57c072e4e0caf\",\"payer\":\"0x1111111111111111111111111111111111111111\",\"resource\":\"https://stillosdigitalholdings.com/notary/screen-url\",\"transaction\":\"0x2222222222222222222222222222222222222222222222222222222222222222\"}",
+          "digest_hex": "5434b1292a3c0810d8748148ebe7bc8d5308ebdc6460a778411eaf2be5cdb037"
+        }
+      },
+      "python_result": {
+        "a": {
+          "valid": true,
+          "jcs": "{\"amount\":\"1000000\",\"asset\":\"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913\",\"network\":\"eip155:8453\",\"payTo\":\"0xa3a05818d4051bfa759fb7d936b57c072e4e0caf\",\"payer\":\"0x1111111111111111111111111111111111111111\",\"resource\":\"https://stillosdigitalholdings.com/notary/screen-url\",\"transaction\":\"0x2222222222222222222222222222222222222222222222222222222222222222\"}",
+          "digest_hex": "5434b1292a3c0810d8748148ebe7bc8d5308ebdc6460a778411eaf2be5cdb037"
+        }
+      }
+    },
+    {
+      "id": "base-03-eighth-field-refused",
+      "attacks": "\"seven fields, and of nothing else\"",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "valid": false,
+          "error": "unknown_field_timestamp"
+        }
+      },
+      "python_result": {
+        "a": {
+          "valid": false,
+          "error": "unknown_field_timestamp"
+        }
+      }
+    },
+    {
+      "id": "base-04-missing-resource",
+      "attacks": "a digest that did not name what was bought would commit to a transfer, not a settlement",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "valid": false,
+          "error": "missing_field_resource"
+        }
+      },
+      "python_result": {
+        "a": {
+          "valid": false,
+          "error": "missing_field_resource"
+        }
+      }
+    },
+    {
+      "id": "base-05-amount-as-number",
+      "attacks": "\"The values are STRINGS\" -- a u256 does not survive JSON numbers",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "valid": false,
+          "error": "field_not_a_string_amount"
+        }
+      },
+      "python_result": {
+        "a": {
+          "valid": false,
+          "error": "field_not_a_string_amount"
+        }
+      }
+    },
+    {
+      "id": "base-06-amount-leading-zero",
+      "attacks": "a leading-zero amount is a different string for the same value",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "valid": false,
+          "error": "amount_not_canonical_decimal"
+        }
+      },
+      "python_result": {
+        "a": {
+          "valid": false,
+          "error": "amount_not_canonical_decimal"
+        }
+      }
+    },
+    {
+      "id": "base-07-uppercase-hex-field",
+      "attacks": "\"The four hex fields are lowercase\"",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "valid": false,
+          "error": "hex_field_not_lowercase_0x_payTo"
+        }
+      },
+      "python_result": {
+        "a": {
+          "valid": false,
+          "error": "hex_field_not_lowercase_0x_payTo"
+        }
+      }
+    },
+    {
+      "id": "base-08-resource-one-character-differs",
+      "attacks": "a receipt whose resource differs by one character is REFUTED, not indeterminate",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "valid": true,
+          "jcs": "{\"amount\":\"1000000\",\"asset\":\"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913\",\"network\":\"eip155:8453\",\"payTo\":\"0xa3a05818d4051bfa759fb7d936b57c072e4e0caf\",\"payer\":\"0x1111111111111111111111111111111111111111\",\"resource\":\"https://stillosdigitalholdings.com/notary/screen-url\",\"transaction\":\"0x2222222222222222222222222222222222222222222222222222222222222222\"}",
+          "digest_hex": "5434b1292a3c0810d8748148ebe7bc8d5308ebdc6460a778411eaf2be5cdb037"
+        },
+        "b": {
+          "valid": true,
+          "jcs": "{\"amount\":\"1000000\",\"asset\":\"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913\",\"network\":\"eip155:8453\",\"payTo\":\"0xa3a05818d4051bfa759fb7d936b57c072e4e0caf\",\"payer\":\"0x1111111111111111111111111111111111111111\",\"resource\":\"https://stillosdigitalholdings.com/notary/screen-urls\",\"transaction\":\"0x2222222222222222222222222222222222222222222222222222222222222222\"}",
+          "digest_hex": "eb3da09a132453384adaf50b004cda47ba16dc465e5156d4458ee92472083240"
+        }
+      },
+      "python_result": {
+        "a": {
+          "valid": true,
+          "jcs": "{\"amount\":\"1000000\",\"asset\":\"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913\",\"network\":\"eip155:8453\",\"payTo\":\"0xa3a05818d4051bfa759fb7d936b57c072e4e0caf\",\"payer\":\"0x1111111111111111111111111111111111111111\",\"resource\":\"https://stillosdigitalholdings.com/notary/screen-url\",\"transaction\":\"0x2222222222222222222222222222222222222222222222222222222222222222\"}",
+          "digest_hex": "5434b1292a3c0810d8748148ebe7bc8d5308ebdc6460a778411eaf2be5cdb037"
+        },
+        "b": {
+          "valid": true,
+          "jcs": "{\"amount\":\"1000000\",\"asset\":\"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913\",\"network\":\"eip155:8453\",\"payTo\":\"0xa3a05818d4051bfa759fb7d936b57c072e4e0caf\",\"payer\":\"0x1111111111111111111111111111111111111111\",\"resource\":\"https://stillosdigitalholdings.com/notary/screen-urls\",\"transaction\":\"0x2222222222222222222222222222222222222222222222222222222222222222\"}",
+          "digest_hex": "eb3da09a132453384adaf50b004cda47ba16dc465e5156d4458ee92472083240"
+        }
+      }
+    },
+    {
+      "id": "base-09-network-case-preserved",
+      "attacks": "a CAIP-2 reference is case-sensitive and MUST NOT be lowercased",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "valid": true,
+          "jcs": "{\"amount\":\"1000000\",\"asset\":\"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913\",\"network\":\"starknet:SN_SEPOLIA\",\"payTo\":\"0xa3a05818d4051bfa759fb7d936b57c072e4e0caf\",\"payer\":\"0x1111111111111111111111111111111111111111\",\"resource\":\"https://stillosdigitalholdings.com/notary/screen-url\",\"transaction\":\"0x2222222222222222222222222222222222222222222222222222222222222222\"}",
+          "digest_hex": "8bda4eb6227114cc242785858d027c653357979a4836c5032629bb4b779ca9a0"
+        },
+        "b": {
+          "valid": true,
+          "jcs": "{\"amount\":\"1000000\",\"asset\":\"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913\",\"network\":\"starknet:sn_sepolia\",\"payTo\":\"0xa3a05818d4051bfa759fb7d936b57c072e4e0caf\",\"payer\":\"0x1111111111111111111111111111111111111111\",\"resource\":\"https://stillosdigitalholdings.com/notary/screen-url\",\"transaction\":\"0x2222222222222222222222222222222222222222222222222222222222222222\"}",
+          "digest_hex": "235df1a1bcc2346f8341b21b2ec93ef3200b6189eb46dba73ed16e8326b73ba8"
+        }
+      },
+      "python_result": {
+        "a": {
+          "valid": true,
+          "jcs": "{\"amount\":\"1000000\",\"asset\":\"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913\",\"network\":\"starknet:SN_SEPOLIA\",\"payTo\":\"0xa3a05818d4051bfa759fb7d936b57c072e4e0caf\",\"payer\":\"0x1111111111111111111111111111111111111111\",\"resource\":\"https://stillosdigitalholdings.com/notary/screen-url\",\"transaction\":\"0x2222222222222222222222222222222222222222222222222222222222222222\"}",
+          "digest_hex": "8bda4eb6227114cc242785858d027c653357979a4836c5032629bb4b779ca9a0"
+        },
+        "b": {
+          "valid": true,
+          "jcs": "{\"amount\":\"1000000\",\"asset\":\"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913\",\"network\":\"starknet:sn_sepolia\",\"payTo\":\"0xa3a05818d4051bfa759fb7d936b57c072e4e0caf\",\"payer\":\"0x1111111111111111111111111111111111111111\",\"resource\":\"https://stillosdigitalholdings.com/notary/screen-url\",\"transaction\":\"0x2222222222222222222222222222222222222222222222222222222222222222\"}",
+          "digest_hex": "235df1a1bcc2346f8341b21b2ec93ef3200b6189eb46dba73ed16e8326b73ba8"
+        }
+      }
+    },
+    {
+      "id": "receipt-01-real-production-verdict",
+      "attacks": "a real production receipt verifies offline against a pinned key",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": true,
+          "preimage": "{\"agent\":\"stillos-foreseal-preflight-check\",\"claim_sha256\":\"c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb\",\"ts\":\"2026-09-06T17:20:11.994Z\",\"prev_hash\":\"68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe\",\"notary_fp\":\"21de066900082465\",\"resolver_hash\":\"0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb\"}",
+          "field_count": 6,
+          "computed_hash": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "hash_ok": true,
+          "sig_ok": true,
+          "sig_error": null
+        }
+      },
+      "python_result": {
+        "a": {
+          "preimage": "{\"agent\":\"stillos-foreseal-preflight-check\",\"claim_sha256\":\"c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb\",\"ts\":\"2026-09-06T17:20:11.994Z\",\"prev_hash\":\"68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe\",\"notary_fp\":\"21de066900082465\",\"resolver_hash\":\"0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb\"}",
+          "field_count": 6,
+          "computed_hash": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "hash_ok": true,
+          "sig_ok": true,
+          "sig_error": null,
+          "ok": true
+        }
+      }
+    },
+    {
+      "id": "receipt-02-real-production-claim-5-field",
+      "attacks": "resolver_hash OMITTED (not null) yields the 5-field preimage",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": true,
+          "preimage": "{\"agent\":\"stillos-foreseal-preflight-check\",\"claim_sha256\":\"56107c0239667922710247f3b6c57d01e958d75fd4375977c42c19b6d5f68efa\",\"ts\":\"2026-09-06T17:20:11.637Z\",\"prev_hash\":\"061fb1b73d358e54eff150602cd8cda5250dc6fe25f9ad46171e851618ea10f3\",\"notary_fp\":\"21de066900082465\"}",
+          "field_count": 5,
+          "computed_hash": "68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe",
+          "hash_ok": true,
+          "sig_ok": true,
+          "sig_error": null
+        }
+      },
+      "python_result": {
+        "a": {
+          "preimage": "{\"agent\":\"stillos-foreseal-preflight-check\",\"claim_sha256\":\"56107c0239667922710247f3b6c57d01e958d75fd4375977c42c19b6d5f68efa\",\"ts\":\"2026-09-06T17:20:11.637Z\",\"prev_hash\":\"061fb1b73d358e54eff150602cd8cda5250dc6fe25f9ad46171e851618ea10f3\",\"notary_fp\":\"21de066900082465\"}",
+          "field_count": 5,
+          "computed_hash": "68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe",
+          "hash_ok": true,
+          "sig_ok": true,
+          "sig_error": null,
+          "ok": true
+        }
+      }
+    },
+    {
+      "id": "receipt-03-resolver-hash-null-not-omitted",
+      "attacks": "null is NOT the same as omitted -- it changes the preimage",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": true,
+          "preimage": "{\"agent\":\"stillos-foreseal-preflight-check\",\"claim_sha256\":\"56107c0239667922710247f3b6c57d01e958d75fd4375977c42c19b6d5f68efa\",\"ts\":\"2026-09-06T17:20:11.637Z\",\"prev_hash\":\"061fb1b73d358e54eff150602cd8cda5250dc6fe25f9ad46171e851618ea10f3\",\"notary_fp\":\"21de066900082465\",\"resolver_hash\":null}",
+          "field_count": 6,
+          "computed_hash": "c2b92914839fe42ce9bb0237f59d7544dc70fbc9bb5585bf9e1fef3aaeeeba97",
+          "hash_ok": false,
+          "sig_ok": true,
+          "sig_error": null
+        }
+      },
+      "python_result": {
+        "a": {
+          "preimage": "{\"agent\":\"stillos-foreseal-preflight-check\",\"claim_sha256\":\"56107c0239667922710247f3b6c57d01e958d75fd4375977c42c19b6d5f68efa\",\"ts\":\"2026-09-06T17:20:11.637Z\",\"prev_hash\":\"061fb1b73d358e54eff150602cd8cda5250dc6fe25f9ad46171e851618ea10f3\",\"notary_fp\":\"21de066900082465\",\"resolver_hash\":null}",
+          "field_count": 6,
+          "computed_hash": "c2b92914839fe42ce9bb0237f59d7544dc70fbc9bb5585bf9e1fef3aaeeeba97",
+          "hash_ok": false,
+          "sig_ok": true,
+          "sig_error": null,
+          "ok": true
+        }
+      }
+    },
+    {
+      "id": "receipt-04-mutated-content",
+      "attacks": "a one-character change to a committed field breaks the digest",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": true,
+          "preimage": "{\"agent\":\"stillos-foreseal-preflight-checkx\",\"claim_sha256\":\"c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb\",\"ts\":\"2026-09-06T17:20:11.994Z\",\"prev_hash\":\"68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe\",\"notary_fp\":\"21de066900082465\",\"resolver_hash\":\"0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb\"}",
+          "field_count": 6,
+          "computed_hash": "667362653b05b88ec39fb2320d546092001130d46ac9a2bacd604e5b191935f4",
+          "hash_ok": false,
+          "sig_ok": true,
+          "sig_error": null
+        }
+      },
+      "python_result": {
+        "a": {
+          "preimage": "{\"agent\":\"stillos-foreseal-preflight-checkx\",\"claim_sha256\":\"c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb\",\"ts\":\"2026-09-06T17:20:11.994Z\",\"prev_hash\":\"68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe\",\"notary_fp\":\"21de066900082465\",\"resolver_hash\":\"0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb\"}",
+          "field_count": 6,
+          "computed_hash": "667362653b05b88ec39fb2320d546092001130d46ac9a2bacd604e5b191935f4",
+          "hash_ok": false,
+          "sig_ok": true,
+          "sig_error": null,
+          "ok": true
+        }
+      }
+    },
+    {
+      "id": "receipt-05-mutated-receipt-hash",
+      "attacks": "mutating the claimed digest breaks both the recomputation and the signature",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": true,
+          "preimage": "{\"agent\":\"stillos-foreseal-preflight-check\",\"claim_sha256\":\"c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb\",\"ts\":\"2026-09-06T17:20:11.994Z\",\"prev_hash\":\"68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe\",\"notary_fp\":\"21de066900082465\",\"resolver_hash\":\"0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb\"}",
+          "field_count": 6,
+          "computed_hash": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "hash_ok": false,
+          "sig_ok": false,
+          "sig_error": null
+        }
+      },
+      "python_result": {
+        "a": {
+          "preimage": "{\"agent\":\"stillos-foreseal-preflight-check\",\"claim_sha256\":\"c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb\",\"ts\":\"2026-09-06T17:20:11.994Z\",\"prev_hash\":\"68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe\",\"notary_fp\":\"21de066900082465\",\"resolver_hash\":\"0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb\"}",
+          "field_count": 6,
+          "computed_hash": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "hash_ok": false,
+          "sig_ok": false,
+          "sig_error": null,
+          "ok": true
+        }
+      }
+    },
+    {
+      "id": "receipt-06-mutated-signature",
+      "attacks": "a one-byte signature mutation must fail verification",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": true,
+          "preimage": "{\"agent\":\"stillos-foreseal-preflight-check\",\"claim_sha256\":\"c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb\",\"ts\":\"2026-09-06T17:20:11.994Z\",\"prev_hash\":\"68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe\",\"notary_fp\":\"21de066900082465\",\"resolver_hash\":\"0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb\"}",
+          "field_count": 6,
+          "computed_hash": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "hash_ok": true,
+          "sig_ok": false,
+          "sig_error": null
+        }
+      },
+      "python_result": {
+        "a": {
+          "preimage": "{\"agent\":\"stillos-foreseal-preflight-check\",\"claim_sha256\":\"c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb\",\"ts\":\"2026-09-06T17:20:11.994Z\",\"prev_hash\":\"68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe\",\"notary_fp\":\"21de066900082465\",\"resolver_hash\":\"0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb\"}",
+          "field_count": 6,
+          "computed_hash": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "hash_ok": true,
+          "sig_ok": false,
+          "sig_error": null,
+          "ok": true
+        }
+      }
+    },
+    {
+      "id": "receipt-07-wrong-signing-key-real-retired",
+      "attacks": "verified against the REAL retired StillOS key, not a synthetic one",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": true,
+          "preimage": "{\"agent\":\"stillos-foreseal-preflight-check\",\"claim_sha256\":\"c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb\",\"ts\":\"2026-09-06T17:20:11.994Z\",\"prev_hash\":\"68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe\",\"notary_fp\":\"21de066900082465\",\"resolver_hash\":\"0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb\"}",
+          "field_count": 6,
+          "computed_hash": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "hash_ok": true,
+          "sig_ok": false,
+          "sig_error": null
+        }
+      },
+      "python_result": {
+        "a": {
+          "preimage": "{\"agent\":\"stillos-foreseal-preflight-check\",\"claim_sha256\":\"c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb\",\"ts\":\"2026-09-06T17:20:11.994Z\",\"prev_hash\":\"68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe\",\"notary_fp\":\"21de066900082465\",\"resolver_hash\":\"0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb\"}",
+          "field_count": 6,
+          "computed_hash": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "hash_ok": true,
+          "sig_ok": false,
+          "sig_error": null,
+          "ok": true
+        }
+      }
+    },
+    {
+      "id": "receipt-08-broken-chain-link",
+      "attacks": "prev_hash must equal the previous receipt_hash",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": true,
+          "preimage": "{\"agent\":\"stillos-foreseal-preflight-check\",\"claim_sha256\":\"c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb\",\"ts\":\"2026-09-06T17:20:11.994Z\",\"prev_hash\":\"08d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe\",\"notary_fp\":\"21de066900082465\",\"resolver_hash\":\"0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb\"}",
+          "field_count": 6,
+          "computed_hash": "f1929518de894398b5db0f9b183719d2c0d0bba93211e372c3b635ea561b928c",
+          "hash_ok": false,
+          "sig_ok": true,
+          "sig_error": null
+        }
+      },
+      "python_result": {
+        "a": {
+          "preimage": "{\"agent\":\"stillos-foreseal-preflight-check\",\"claim_sha256\":\"c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb\",\"ts\":\"2026-09-06T17:20:11.994Z\",\"prev_hash\":\"08d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe\",\"notary_fp\":\"21de066900082465\",\"resolver_hash\":\"0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb\"}",
+          "field_count": 6,
+          "computed_hash": "f1929518de894398b5db0f9b183719d2c0d0bba93211e372c3b635ea561b928c",
+          "hash_ok": false,
+          "sig_ok": true,
+          "sig_error": null,
+          "ok": true
+        }
+      }
+    },
+    {
+      "id": "receipt-09-jcs-would-be-wrong",
+      "attacks": "the notary preimage is FIXED-ORDER, not JCS -- sorting the keys changes the digest",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "fixed": {
+          "ok": true,
+          "preimage": "{\"agent\":\"stillos-foreseal-preflight-check\",\"claim_sha256\":\"c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb\",\"ts\":\"2026-09-06T17:20:11.994Z\",\"prev_hash\":\"68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe\",\"notary_fp\":\"21de066900082465\",\"resolver_hash\":\"0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb\"}",
+          "field_count": 6,
+          "computed_hash": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "hash_ok": true,
+          "sig_ok": true,
+          "sig_error": null
+        },
+        "jcs": {
+          "ok": true,
+          "canonical": "{\"agent\":\"stillos-foreseal-preflight-check\",\"claim_sha256\":\"c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb\",\"notary_fp\":\"21de066900082465\",\"prev_hash\":\"68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe\",\"resolver_hash\":\"0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb\",\"ts\":\"2026-09-06T17:20:11.994Z\"}",
+          "sha256": "660d53cfda7c8935d525d8eb38117ffba40b228d490c6506b89d4462e2c51bc5"
+        }
+      },
+      "python_result": {
+        "fixed": {
+          "preimage": "{\"agent\":\"stillos-foreseal-preflight-check\",\"claim_sha256\":\"c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb\",\"ts\":\"2026-09-06T17:20:11.994Z\",\"prev_hash\":\"68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe\",\"notary_fp\":\"21de066900082465\",\"resolver_hash\":\"0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb\"}",
+          "field_count": 6,
+          "computed_hash": "636ec23cec4628502312ddde24bc620bee54bf83bd85759eadabf810230a4536",
+          "hash_ok": true,
+          "sig_ok": true,
+          "sig_error": null,
+          "ok": true
+        },
+        "jcs": {
+          "ok": true,
+          "canonical": "{\"agent\":\"stillos-foreseal-preflight-check\",\"claim_sha256\":\"c4c75b22aacaedc106d8ee63e1189fd82b9fff61f980c14b1c6bb8fdaf8eb4eb\",\"notary_fp\":\"21de066900082465\",\"prev_hash\":\"68d12125b03568f29f56afadb1f65da497546fb4114db94e8d9d7d39299994fe\",\"resolver_hash\":\"0027fdef54e2a3e188b7227fc3c2c09017b33c8bcbad5f14972da963e2d046fb\",\"ts\":\"2026-09-06T17:20:11.994Z\"}",
+          "sha256": "660d53cfda7c8935d525d8eb38117ffba40b228d490c6506b89d4462e2c51bc5"
+        }
+      }
+    },
+    {
+      "id": "auth-01-amount-exactly-at-per-payment",
+      "attacks": "the boundary is inclusive",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "verdict": "allow",
+          "code": null
+        }
+      },
+      "python_result": {
+        "a": {
+          "verdict": "allow",
+          "code": null
+        }
+      }
+    },
+    {
+      "id": "auth-02-one-unit-above-per-payment",
+      "attacks": "one minor unit over must deny",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "verdict": "deny",
+          "code": "scope_exceeded"
+        }
+      },
+      "python_result": {
+        "a": {
+          "verdict": "deny",
+          "code": "scope_exceeded"
+        }
+      }
+    },
+    {
+      "id": "auth-03-amount-exactly-at-cap",
+      "attacks": "with no perPayment, cap is the inclusive bound",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "verdict": "allow",
+          "code": null
+        }
+      },
+      "python_result": {
+        "a": {
+          "verdict": "allow",
+          "code": null
+        }
+      }
+    },
+    {
+      "id": "auth-04-one-unit-above-cap",
+      "attacks": "no single payment may exceed the cumulative cap",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "verdict": "deny",
+          "code": "scope_exceeded"
+        }
+      },
+      "python_result": {
+        "a": {
+          "verdict": "deny",
+          "code": "scope_exceeded"
+        }
+      }
+    },
+    {
+      "id": "auth-05-unauthorized-recipient",
+      "attacks": "recipient scope fails closed",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "verdict": "deny",
+          "code": "request_mismatch"
+        }
+      },
+      "python_result": {
+        "a": {
+          "verdict": "deny",
+          "code": "request_mismatch"
+        }
+      }
+    },
+    {
+      "id": "auth-06-wrong-asset",
+      "attacks": "asset must match exactly",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "verdict": "deny",
+          "code": "request_mismatch"
+        }
+      },
+      "python_result": {
+        "a": {
+          "verdict": "deny",
+          "code": "request_mismatch"
+        }
+      }
+    },
+    {
+      "id": "auth-07-expired-authority",
+      "attacks": "expiry uses the VERIFIER clock",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "verdict": "deny",
+          "code": "expired"
+        }
+      },
+      "python_result": {
+        "a": {
+          "verdict": "deny",
+          "code": "expired"
+        }
+      }
+    },
+    {
+      "id": "auth-08-payer-at-does-not-extend",
+      "attacks": "a payer-supplied `at` is advisory and MUST NOT extend authorization",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "verdict": "deny",
+          "code": "expired"
+        }
+      },
+      "python_result": {
+        "a": {
+          "verdict": "deny",
+          "code": "expired"
+        }
+      }
+    },
+    {
+      "id": "auth-09-bad-alg-refused",
+      "attacks": "Ed25519 is the sole legal alg",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "verdict": "deny",
+          "code": "invalid_signature"
+        }
+      },
+      "python_result": {
+        "a": {
+          "verdict": "deny",
+          "code": "invalid_signature"
+        }
+      }
+    },
+    {
+      "id": "auth-10-unknown-member-refused",
+      "attacks": "an unknown mandate member must refuse, not be ignored",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": false,
+          "code": "invalid_bundle"
+        }
+      },
+      "python_result": {
+        "a": {
+          "ok": false,
+          "code": "invalid_bundle"
+        }
+      }
+    },
+    {
+      "id": "auth-11-wildcard-mixed-invalid",
+      "attacks": "\"*\" mixed with any other element is INVALID",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": false,
+          "code": "invalid_bundle"
+        }
+      },
+      "python_result": {
+        "a": {
+          "ok": false,
+          "code": "invalid_bundle"
+        }
+      }
+    },
+    {
+      "id": "auth-12-empty-recipients-invalid",
+      "attacks": "an empty recipient array fails closed",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": false,
+          "code": "invalid_bundle"
+        }
+      },
+      "python_result": {
+        "a": {
+          "ok": false,
+          "code": "invalid_bundle"
+        }
+      }
+    },
+    {
+      "id": "auth-13-overflowing-date-invalid",
+      "attacks": "a shape-valid but overflowing date must not be leniently normalized",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": false,
+          "code": "invalid_bundle"
+        }
+      },
+      "python_result": {
+        "a": {
+          "ok": false,
+          "code": "invalid_bundle"
+        }
+      }
+    },
+    {
+      "id": "auth-14-lone-surrogate-purpose-totality",
+      "attacks": "a malformed purpose refuses WITHOUT throwing (section 6 totality)",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": false,
+          "code": "invalid_bundle"
+        }
+      },
+      "python_result": {
+        "a": {
+          "ok": false,
+          "code": "invalid_bundle"
+        }
+      }
+    },
+    {
+      "id": "bind-01-three-scheme-encodings",
+      "attacks": "one B, three renderings: 0x-lowerhex, decimal uint256, UPPERCASE hex",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": true,
+          "eip3009": "0x5aa71c23c84e6763bdb31a473f1981fd37ccf93945205b77eb84e0c271c1e74b",
+          "permit2": "41003414045902520435980278564259620301945597019592807630744813971199613855563",
+          "xrpl": "5AA71C23C84E6763BDB31A473F1981FD37CCF93945205B77EB84E0C271C1E74B"
+        }
+      },
+      "python_result": {
+        "a": {
+          "eip3009": "0x5aa71c23c84e6763bdb31a473f1981fd37ccf93945205b77eb84e0c271c1e74b",
+          "permit2": "41003414045902520435980278564259620301945597019592807630744813971199613855563",
+          "xrpl": "5AA71C23C84E6763BDB31A473F1981FD37CCF93945205B77EB84E0C271C1E74B",
+          "ok": true
+        }
+      }
+    },
+    {
+      "id": "bind-02-wrong-payment-id",
+      "attacks": "a different paymentId yields a different binding",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": true,
+          "eip3009": "0x5aa71c23c84e6763bdb31a473f1981fd37ccf93945205b77eb84e0c271c1e74b",
+          "permit2": "41003414045902520435980278564259620301945597019592807630744813971199613855563",
+          "xrpl": "5AA71C23C84E6763BDB31A473F1981FD37CCF93945205B77EB84E0C271C1E74B"
+        },
+        "b": {
+          "ok": true,
+          "eip3009": "0x631f554146c4eb8d5405e08b6be0e5a71d604e7f00088621025368392d110131",
+          "permit2": "44834332677040381583569417330007198325478710788842433982215574104405424800049",
+          "xrpl": "631F554146C4EB8D5405E08B6BE0E5A71D604E7F00088621025368392D110131"
+        }
+      },
+      "python_result": {
+        "a": {
+          "eip3009": "0x5aa71c23c84e6763bdb31a473f1981fd37ccf93945205b77eb84e0c271c1e74b",
+          "permit2": "41003414045902520435980278564259620301945597019592807630744813971199613855563",
+          "xrpl": "5AA71C23C84E6763BDB31A473F1981FD37CCF93945205B77EB84E0C271C1E74B",
+          "ok": true
+        },
+        "b": {
+          "eip3009": "0x631f554146c4eb8d5405e08b6be0e5a71d604e7f00088621025368392d110131",
+          "permit2": "44834332677040381583569417330007198325478710788842433982215574104405424800049",
+          "xrpl": "631F554146C4EB8D5405E08B6BE0E5A71D604E7F00088621025368392D110131",
+          "ok": true
+        }
+      }
+    },
+    {
+      "id": "bind-03-digest-prefix-must-be-retained",
+      "attacks": "the sha256: prefix is part of the preimage; stripping it changes B",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": true,
+          "eip3009": "0x5aa71c23c84e6763bdb31a473f1981fd37ccf93945205b77eb84e0c271c1e74b",
+          "permit2": "41003414045902520435980278564259620301945597019592807630744813971199613855563",
+          "xrpl": "5AA71C23C84E6763BDB31A473F1981FD37CCF93945205B77EB84E0C271C1E74B"
+        },
+        "b": {
+          "ok": false,
+          "error": "malformed_input"
+        }
+      },
+      "python_result": {
+        "a": {
+          "eip3009": "0x5aa71c23c84e6763bdb31a473f1981fd37ccf93945205b77eb84e0c271c1e74b",
+          "permit2": "41003414045902520435980278564259620301945597019592807630744813971199613855563",
+          "xrpl": "5AA71C23C84E6763BDB31A473F1981FD37CCF93945205B77EB84E0C271C1E74B",
+          "ok": true
+        },
+        "b": {
+          "ok": false,
+          "error": "malformed_input"
+        }
+      }
+    },
+    {
+      "id": "bind-04-out-of-grammar-payment-id",
+      "attacks": "a paymentId with an anchor-grammar separator must be refused",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "a": {
+          "ok": false,
+          "error": "malformed_input"
+        }
+      },
+      "python_result": {
+        "a": {
+          "ok": false,
+          "error": "malformed_input"
+        }
+      }
+    },
+    {
+      "id": "split-01-authorized-then-overspent",
+      "attacks": "ALLOW pre-settlement, REFUTED post-settlement on AMOUNT",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "pre": {
+          "verdict": "allow",
+          "code": null
+        },
+        "post": {
+          "verdict": "refuted",
+          "code": "scope_exceeded"
+        }
+      },
+      "python_result": {
+        "pre": {
+          "verdict": "allow",
+          "code": null
+        },
+        "post": {
+          "verdict": "refuted",
+          "code": "scope_exceeded"
+        }
+      }
+    },
+    {
+      "id": "split-02-authorized-then-wrong-recipient",
+      "attacks": "ALLOW pre-settlement, REFUTED post-settlement on RECIPIENT",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "pre": {
+          "verdict": "allow",
+          "code": null
+        },
+        "post": {
+          "verdict": "refuted",
+          "code": "request_mismatch"
+        }
+      },
+      "python_result": {
+        "pre": {
+          "verdict": "allow",
+          "code": null
+        },
+        "post": {
+          "verdict": "refuted",
+          "code": "request_mismatch"
+        }
+      }
+    },
+    {
+      "id": "split-03-authorized-and-complied",
+      "attacks": "the honest case: ALLOW and COMPLIED",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "pre": {
+          "verdict": "allow",
+          "code": null
+        },
+        "post": {
+          "verdict": "complied",
+          "code": null
+        }
+      },
+      "python_result": {
+        "pre": {
+          "verdict": "allow",
+          "code": null
+        },
+        "post": {
+          "verdict": "complied",
+          "code": null
+        }
+      }
+    },
+    {
+      "id": "split-04-settled-under-report",
+      "attacks": "a smaller COMMITTED amount than the decoded one is a commitment mismatch",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "post": {
+          "verdict": "refuted",
+          "code": "request_mismatch"
+        }
+      },
+      "python_result": {
+        "post": {
+          "verdict": "refuted",
+          "code": "request_mismatch"
+        }
+      }
+    },
+    {
+      "id": "split-05-wrong-binding-slot",
+      "attacks": "the slot is read from the settled artifact and must match",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "post": {
+          "verdict": "refuted",
+          "code": "invalid_proof"
+        }
+      },
+      "python_result": {
+        "post": {
+          "verdict": "refuted",
+          "code": "invalid_proof"
+        }
+      }
+    },
+    {
+      "id": "split-06-partial-binding-info",
+      "attacks": "scheme without slot fails closed, not treated as a sanctioned omission of both",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [],
+      "node_result": {
+        "post": {
+          "verdict": "refuted",
+          "code": "malformed_input"
+        }
+      },
+      "python_result": {
+        "post": {
+          "verdict": "refuted",
+          "code": "malformed_input"
+        }
+      }
+    },
+    {
+      "id": "split-07-undefined-scheme-token-refuted",
+      "attacks": "the spec defines NO wire token for `scheme`; a plausible reading refutes a COMPLIANT settlement",
+      "status": "PASS",
+      "node_problems": [],
+      "python_problems": [],
+      "differential": [],
+      "documented_unspecified_divergence": [
+        {
+          "key": "code",
+          "node": "invalid_proof",
+          "python": "malformed_input"
+        }
+      ],
+      "node_result": {
+        "post": {
+          "verdict": "refuted",
+          "code": "invalid_proof"
+        }
+      },
+      "python_result": {
+        "post": {
+          "verdict": "refuted",
+          "code": "malformed_input"
+        }
+      }
+    }
+  ]
+}
