@@ -10,7 +10,7 @@ of either PR's code. Exact SHAs in `SOURCE_PINS.md`.
 
 ## What was built
 
-`interop/x402-authority/`:
+Repository layout:
 - `lib/canon.cjs` — JCS (RFC 8785) canonicalizer, Ed25519 sign/verify via `node:crypto` (no external crypto dependency), UTF-16 well-formedness check.
 - `lib/mandate.cjs` — §3 mandate shape validation, §5 digest, §12 delegation narrowing + root-issuer recovery.
 - `lib/binding.cjs` — §7 preimage binding, all 3 scheme encodings (EIP-3009/Permit2/XRPL).
@@ -101,3 +101,32 @@ defect report.
   mandate issuers today (this sprint has no counterparty relationship that
   would populate one). The mechanism is wired; the registry is empty by
   honest default, not a fake pass.
+
+## Addendum — differential proof (2026-09-10)
+
+The above is the single-implementation result. `proof/` adds a second,
+unrelated implementation and runs both against a frozen adversarial corpus:
+**69/69**, one recorded divergence, `./prove.sh`. Implementation B is Python
+standard library only, with Ed25519 re-derived from RFC 8032 in integer
+arithmetic, so the two sides cross unrelated crypto stacks rather than calling
+one library twice.
+
+Two things in this document are superseded by that run:
+
+1. **"No divergence with either PR's own published values was found — nothing
+   here required treating a mismatch as a defect report."** Still true of
+   published *values*. Three defects in the specification *text* were found and
+   are reported in `proof/PROOF.md` as D-1 (no normative mapping from a #3220
+   refusal to #3376's closed EVC denial-code registry), D-2 (an adapter defect
+   in this kit that silently refused compliant settlements, caught by the
+   second implementation) and D-3 (§7's `scheme` has no wire token, and the
+   §19 carriage agreed 2026-09-08 populates that field from a disjoint
+   vocabulary).
+
+2. **§7 cross-check against whawk46's independently published fixture**
+   (#3220 comment, 2026-09-08). All four values reproduce exactly from this
+   kit with no code changes: `mandateDigest` `sha256:445fed87…c960ca05`, raw
+   `B` `5aa71c23…71c1e74b`, and all three per-scheme renderings — `0x`-lowerhex,
+   the Permit2 decimal uint256 `41003414…13855563`, and the XRPL uppercase
+   form. That is a third party reproducing the spec author's numbers from the
+   formula alone.

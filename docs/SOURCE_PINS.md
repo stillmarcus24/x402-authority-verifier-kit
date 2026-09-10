@@ -14,8 +14,8 @@ implementation nor this pin file constitutes acceptance/endorsement by either
 author or the x402-foundation maintainers.
 
 Files pulled verbatim and stored locally for reproducibility:
-- `interop/x402-authority/vectors/fixtures/authority.md` — full spec text, from whawk46 `72c3704`.
-- `interop/x402-authority/vectors/fixtures/authority-vectors.json` — deterministic conformance vectors, from whawk46 `72c3704`.
+- `vectors/fixtures/authority.md` — full spec text, from whawk46 `72c3704`.
+- `vectors/fixtures/authority-vectors.json` — deterministic conformance vectors, from whawk46 `72c3704`.
 - The `External Verifier Contract v1` wire shapes (request/response JSON, denial-code registry) were read from #3376's `typescript/packages/extensions/src/authorization-evidence/{types,server,verify,evcHost}.ts` at `2649525`. EVC itself is a **third-party spec** (`github.com/bolyra/bolyra`), not authored by either PR — #3376 is a consumer of it, not its owner. Not vendored locally (TypeScript, informative only — StillOS's verifier is a from-scratch Node implementation against the wire contract, not a port of this code).
 
 ## Explicit scope cut (documented, not silent)

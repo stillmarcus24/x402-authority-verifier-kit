@@ -121,19 +121,45 @@ which has no such adapter — disagreeing on `split-03-authorized-and-complied`.
 This is the case for building the second implementation, stated as a fact
 about this repository rather than as an argument.
 
-### D-3 — `scheme` has no normative wire token
+### D-3 — `scheme` has no normative wire token, and the agreed carriage carries a different vocabulary
 
-#3220 §7's table names the three schemes in prose — "EIP-3009", "Permit2",
-"XRPL" — and never defines the token that appears on the wire in a settled
-artifact's `scheme` field. The only machine-readable evidence is the object
-key in #3220's own fixture: `eip3009`. An implementer reading the prose
-alone plausibly emits `eip-3009`, and a correctly fail-closed verifier then
+Two layers. The second is the load-bearing one.
+
+**(a) No token.** #3220 §7's table names the three schemes in prose —
+"EIP-3009", "Permit2", "XRPL" — and never defines the token that appears on
+the wire. The only machine-readable evidence anywhere is the object key in
+#3220's own fixture: `eip3009`. An implementer reading the prose alone
+plausibly emits `eip-3009`, and a correctly fail-closed verifier then
 **refutes a settlement that complied in every substantive respect** — right
 mandate, right amount, right recipient, right binding slot.
+`split-07-undefined-scheme-token-refuted` is a frozen reproduction.
 
-`split-07-undefined-scheme-token-refuted` is a frozen reproduction. The
-fail-closed behavior is right; the missing token is the defect. **The fix is
-three literals in §7's table.**
+**(b) The carriage populates that field from a disjoint vocabulary.** §7's
+three rows are keyed on the *signature* scheme, and that key selects the
+**rendering** of `B`: `0x`-lowerhex for EIP-3009, decimal uint256 for
+Permit2, UPPERCASE hex for XRPL. #3376's `defaultExtractPaymentBinding`
+(`server.ts` @ `2649525`) sources `payment.scheme` from
+`p.accepted?.scheme` — the *x402 payment* scheme. Those vocabularies do not
+intersect. #3376's own unit test asserts the result:
+
+```js
+expect(out).toEqual({ scheme: "exact", binding_slot: "0xdeadbeef", payment_id: "pay_123" })
+```
+
+and its three-scheme cross-check carries an eip3009-style, a permit2-style
+and an xrpl-style slot — **all three under the identical `scheme: "exact"`**.
+
+So a binding-aware verifier receiving `{scheme: "exact", binding_slot: "…"}`
+cannot determine which §7 row to render `B` under. Fail closed and it refutes
+compliant settlements. Try all three renderings and the spec does not
+sanction it — and scheme confusion becomes undetectable, which is the
+property §7 exists to provide.
+
+**This is not "three literals in §7's table."** The discriminator §7 needs is
+not carried by the seam #3376 and #3220 agreed on 2026-09-08. Either §7 keys
+on something the carriage actually has (the observed slot encoding, or
+`accepted.network`), or the carriage adds the signature-scheme discriminator
+alongside the verbatim payment scheme.
 
 ## The one documented divergence
 
