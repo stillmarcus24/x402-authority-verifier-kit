@@ -76,8 +76,26 @@ async function main() {
       return finish(verdict, receiptFields);
     }
 
+    // EVC §2.1: a request that is not a JSON object is malformed_input, and that
+    // test must run BEFORE the version check -- otherwise a non-object is reported
+    // as unsupported_version, which asserts something about a version field the
+    // request cannot have. Array.isArray is required: typeof [1,2,3] === 'object'.
+    // (bolyra/x402-authority-verifier-kit#1, saneGuy, vector 1 of 2.)
+    if (typeof req !== 'object' || req === null || Array.isArray(req)) {
+      verdict = deny('malformed_input', 'request must be a JSON object');
+      return finish(verdict, receiptFields);
+    }
+
     if (req.version !== 1) {
       verdict = deny('unsupported_version', `request.version must be 1, got ${JSON.stringify(req.version)}`);
+      return finish(verdict, receiptFields);
+    }
+    // EVC §2.1: a MISSING required field is malformed_input. invalid_bundle is
+    // reserved for a bundle that is present and fails validation -- collapsing the
+    // two tells a caller their bundle is bad when they never sent one.
+    // (same issue, vector 2 of 2.)
+    if (req.bundle === undefined || req.bundle === null) {
+      verdict = deny('malformed_input', 'request.bundle is required');
       return finish(verdict, receiptFields);
     }
     if (typeof req.bundle !== 'string' || req.bundle.length === 0) {
