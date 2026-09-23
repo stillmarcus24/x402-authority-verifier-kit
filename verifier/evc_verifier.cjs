@@ -29,14 +29,25 @@ const receipt = require('../lib/receipt.cjs');
 const POLICY_VERSION = 'stillos-x402-authority-evc-verifier/1';
 const TRUSTED_ISSUERS_FILE = path.join(__dirname, '..', 'state', 'trusted-issuers.json');
 
+// ABSENT trust list = not enforced (documented gap, see CROSS_IMPLEMENTATION_REPORT.md).
+// A trust list that is PRESENT but unreadable/unparseable/not-an-array is a different
+// case and MUST NOT collapse into the absent one: returning null there silently
+// deletes the root-issuer control, turning an `untrusted_root` deny into `allow` on
+// the identical request. Operator intent to enforce is expressed by the file existing,
+// so a present-but-broken file fails CLOSED -- it throws, and main()'s catch renders
+// it as deny code=internal_error with a non-zero exit per §7.1.
 function loadTrustedIssuers() {
-  if (!fs.existsSync(TRUSTED_ISSUERS_FILE)) return null; // null = not enforced (documented gap, see CROSS_IMPLEMENTATION_REPORT.md)
+  if (!fs.existsSync(TRUSTED_ISSUERS_FILE)) return null;
+  let list;
   try {
-    const list = JSON.parse(fs.readFileSync(TRUSTED_ISSUERS_FILE, 'utf8'));
-    return Array.isArray(list) ? list : null;
-  } catch {
-    return null;
+    list = JSON.parse(fs.readFileSync(TRUSTED_ISSUERS_FILE, 'utf8'));
+  } catch (e) {
+    throw new Error(`trusted-issuers list is present but unreadable (${e && e.message}) — refusing to fail open`);
   }
+  if (!Array.isArray(list)) {
+    throw new Error('trusted-issuers list is present but is not a JSON array — refusing to fail open');
+  }
+  return list;
 }
 
 function deny(code, message, detail, kind) {
@@ -125,6 +136,16 @@ async function main() {
       verdict = deny('invalid_bundle', 'request.bundle is not valid JSON');
       return finish(verdict, receiptFields);
     }
+    // EVC §2.1, same rule as the request envelope one layer up: check OBJECTNESS
+    // before reading a version off it. A bundle that parses to a non-object has no
+    // `.v` to report on, so `unsupported_version` asserts something about a field
+    // it cannot have, and a bundle parsing to `null` threw outright (internal_error).
+    // The bundle is present and fails validation -> invalid_bundle, not malformed_input.
+    // (Sibling of bolyra/x402-authority-verifier-kit#1; not covered by its vectors.)
+    if (typeof bundle !== 'object' || bundle === null || Array.isArray(bundle)) {
+      verdict = deny('invalid_bundle', 'request.bundle must decode to a JSON object');
+      return finish(verdict, receiptFields);
+    }
     if (bundle.v !== 'stillos-evidence-bundle/1') {
       verdict = deny('unsupported_version', `bundle.v must be 'stillos-evidence-bundle/1', got ${JSON.stringify(bundle.v)}`);
       return finish(verdict, receiptFields);
@@ -210,8 +231,17 @@ function finish(verdict, receiptFields) {
     process.stderr.write(`receipt write failed (non-fatal, verdict still stands): ${e && e.message}\n`);
   }
   process.stdout.write(JSON.stringify(verdict));
+  // EVC §7.1: an internal_error is emitted as deny code=internal_error AND exits
+  // non-zero; every other produced verdict (allow or a real deny) exits 0.
+  // Set process.exitCode rather than calling process.exit(): process.exit() abandons
+  // a pending async stdout write to a pipe. Measured on node v22.22.1, that caps the
+  // write at 1 MiB (process.exitCode wrote all 5,000,055 bytes of the same payload).
+  // No real verdict approaches 1 MiB, and the reference host kills anything past the
+  // same 1 MiB bound as oversize_stdout, so this is belt-and-braces, not a live bug.
+  if (verdict && verdict.code === 'internal_error') process.exitCode = 1;
 }
 
 main().catch(e => {
   process.stdout.write(JSON.stringify(deny('internal_error', `unhandled: ${e && e.message}`)));
+  process.exitCode = 1;
 });
